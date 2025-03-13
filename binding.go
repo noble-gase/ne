@@ -2,6 +2,7 @@ package ne
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 
@@ -35,7 +36,7 @@ func BindForm(r *http.Request, obj any) error {
 			}
 		}
 	}
-	if err := MapForm(obj, r.Form); err != nil {
+	if err := MapForm(obj, r.PostForm); err != nil {
 		return err
 	}
 	return validator.ValidateStruct(obj)
@@ -45,18 +46,39 @@ func BindForm(r *http.Request, obj any) error {
 func BindProto(r *http.Request, msg proto.Message) error {
 	// GET请求
 	if r.Method == http.MethodGet {
-		err := protos.QueryToMessage(msg, r.URL.Query())
-		if err != nil {
+		if err := protos.ValuesToMessage(msg, r.URL.Query()); err != nil {
 			return err
 		}
 		return protos.Validate(msg)
 	}
-	// 取请求Body
-	if r.Body != nil && r.Body != http.NoBody {
-		defer io.Copy(io.Discard, r.Body)
-		if err := json.NewDecoder(r.Body).Decode(msg); err != nil {
+
+	// 根据Content-Type解析请求体
+	switch ContentType(r.Header) {
+	case ContentForm:
+		if err := r.ParseForm(); err != nil {
 			return err
 		}
+		if err := protos.ValuesToMessage(msg, r.PostForm); err != nil {
+			return err
+		}
+	case ContentMultipartForm:
+		if err := r.ParseMultipartForm(MaxFormMemory); err != nil {
+			if err != http.ErrNotMultipart {
+				return err
+			}
+		}
+		if err := protos.ValuesToMessage(msg, r.PostForm); err != nil {
+			return err
+		}
+	case ContentJSON:
+		if r.Body != nil && r.Body != http.NoBody {
+			defer io.Copy(io.Discard, r.Body)
+			if err := json.NewDecoder(r.Body).Decode(msg); err != nil {
+				return err
+			}
+		}
+	default:
+		return errors.New("unsupported Content-Type")
 	}
 	return protos.Validate(msg)
 }

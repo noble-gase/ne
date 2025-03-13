@@ -197,8 +197,8 @@ func getMapKey(fd protoreflect.FieldDescriptor, key protoreflect.Value) string {
 	return key.String()
 }
 
-// QueryToMessage parses url.Values into proto.Message
-func QueryToMessage(msg proto.Message, values url.Values) error {
+// ValuesToMessage parses url.Values into proto.Message
+func ValuesToMessage(msg proto.Message, values url.Values) error {
 	return parseValues(msg.ProtoReflect(), valuesToMap(values))
 }
 

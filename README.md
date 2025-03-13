@@ -29,7 +29,7 @@ go get -u github.com/noble-gase/ne
 - 基于泛型的无限菜单分类层级树
 - 实用的辅助方法：IP、file、time、slice、string、version compare 等
 
-> ⚠️ 注意：如需支持协程并发复用的 `errgroup` 和 `timewheel`，请使用 👉 [xe](https://github.com/noble-gase/xe)
+> ⚠️ 注意：如需支持协程并发复用的 `errgroup` 和 `timewheel`，请使用 👉 [氙-Xe](https://github.com/noble-gase/xe)
 
 ## SQL Builder
 

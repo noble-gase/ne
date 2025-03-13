@@ -19,8 +19,8 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
-// MessageToQuery parses proto.Message into url.Values
-func MessageToQuery(msg proto.Message) url.Values {
+// MessageToValues parses proto.Message into url.Values
+func MessageToValues(msg proto.Message) url.Values {
 	return parseMessage(msg.ProtoReflect())
 }
 

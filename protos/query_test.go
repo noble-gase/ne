@@ -20,7 +20,7 @@ func TestValuesToMessage(t *testing.T) {
 	fmt.Println(string(b))
 }
 
-func TestMessageToQuery(t *testing.T) {
+func TestMessageToValues(t *testing.T) {
 	msg1 := &DemoRequest{
 		User: &User{
 			Name: "foo",
@@ -41,7 +41,7 @@ func TestMessageToQuery(t *testing.T) {
 			},
 		},
 	}
-	values := MessageToQuery(msg1)
+	values := MessageToValues(msg1)
 	query, err := url.QueryUnescape(values.Encode())
 	assert.Nil(t, err)
 	fmt.Println("[query]", query)

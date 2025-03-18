@@ -9,7 +9,6 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -52,20 +51,11 @@ func NewDB(cfg *DBConfig) (*sql.DB, error) {
 	return db, nil
 }
 
-// NewDBx sqlx.DB
-func NewDBx(cfg *DBConfig) (*sqlx.DB, error) {
-	db, err := NewDB(cfg)
-	if err != nil {
-		return nil, err
-	}
-	return sqlx.NewDb(db, cfg.Driver), nil
-}
-
 // Transaction 执行数据库事物
-func Transaction(ctx context.Context, db *sqlx.DB, fn func(ctx context.Context, tx *sqlx.Tx) error) (err error) {
-	tx, _err := db.BeginTxx(ctx, nil)
+func Transaction(ctx context.Context, db *sql.DB, fn func(ctx context.Context, tx *sql.Tx) error) (err error) {
+	tx, _err := db.BeginTx(ctx, nil)
 	if _err != nil {
-		err = fmt.Errorf("db.BeginTxx: %w", _err)
+		err = fmt.Errorf("db.BeginTx: %w", _err)
 		return
 	}
 
@@ -76,15 +66,15 @@ func Transaction(ctx context.Context, db *sqlx.DB, fn func(ctx context.Context, 
 		}
 	}()
 
-	err = fn(ctx, tx)
-	if err != nil {
+	if err = fn(ctx, tx); err != nil {
 		if err_ := tx.Rollback(); err_ != nil {
 			err = fmt.Errorf("%w: tx.Rollback: %w", err, err_)
 		}
 		return
 	}
-	if err_ := tx.Commit(); err_ != nil {
-		err = fmt.Errorf("tx.Commit: %w", err_)
+
+	if _err = tx.Commit(); _err != nil {
+		err = fmt.Errorf("tx.Commit: %w", _err)
 		return
 	}
 	return

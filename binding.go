@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/noble-gase/ne/form"
 	"github.com/noble-gase/ne/protos"
 	"github.com/noble-gase/ne/validator"
 	"google.golang.org/protobuf/proto"
@@ -36,7 +37,7 @@ func BindForm(r *http.Request, obj any) error {
 			}
 		}
 	}
-	if err := MapForm(obj, r.PostForm); err != nil {
+	if err := form.MapForm(obj, r.PostForm); err != nil {
 		return err
 	}
 	return validator.ValidateStruct(obj)

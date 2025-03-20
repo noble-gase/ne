@@ -26,6 +26,16 @@ const (
 	ContentMultipartForm = "multipart/form-data"
 )
 
+func ContentType(h http.Header) string {
+	content := h.Get(HeaderContentType)
+	for i, char := range content {
+		if char == ' ' || char == ';' {
+			return content[:i]
+		}
+	}
+	return content
+}
+
 // RestyClient default client for http request
 var RestyClient = resty.NewWithClient(NewHttpClient())
 

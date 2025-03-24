@@ -16,3 +16,8 @@ func TestIs(t *testing.T) {
 	assert.True(t, Is(New(0, "success"), OK))
 	assert.False(t, Is(New(1, "failed"), OK))
 }
+
+func TestNew(t *testing.T) {
+	t.Log(OK.New("success"))
+	t.Log(Unknown.New("user(id=%d) not found", 1))
+}

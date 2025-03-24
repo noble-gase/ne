@@ -42,23 +42,10 @@ func OK(data ...any) Result {
 	return New(codes.OK, data[0])
 }
 
-func Err(err error, msg ...string) Result {
-	var (
-		code codes.Code
-		text string
-	)
-	switch v := err.(type) {
-	case codes.Code:
-		code = v
-	default:
-		code = codes.Unknown
-		text = err.Error()
+func Err(err error) Result {
+	code, ok := err.(codes.Code)
+	if ok {
+		return New(code, nil)
 	}
-	if len(msg) != 0 {
-		text = msg[0]
-	}
-	if len(text) != 0 {
-		code = code.New(text)
-	}
-	return New(code, nil)
+	return New(codes.Unknown.New(err.Error()), nil)
 }

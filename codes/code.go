@@ -12,7 +12,7 @@ type Code interface {
 	// M returns the code message
 	M() string
 	// New returns a newly allocated code with the same value.
-	New(msg string) Code
+	New(msg string, args ...any) Code
 }
 
 type code struct {
@@ -29,11 +29,14 @@ func (c code) M() string {
 }
 
 func (c code) Error() string {
-	return fmt.Sprintf("%d|%s", c.v, c.m)
+	return fmt.Sprintf("%d | %s", c.v, c.m)
 }
 
-func (c code) New(msg string) Code {
-	return code{v: c.v, m: msg}
+func (c code) New(msg string, args ...any) Code {
+	if len(args) == 0 {
+		return code{v: c.v, m: msg}
+	}
+	return code{v: c.v, m: fmt.Sprintf(msg, args...)}
 }
 
 func New(v int, m string) Code {
@@ -42,7 +45,7 @@ func New(v int, m string) Code {
 
 var (
 	OK      = New(0, "OK")
-	Unknown = New(1, "unknown")
+	Unknown = New(-1, "unknown")
 )
 
 // Is reports whether the err is the target code

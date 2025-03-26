@@ -2,6 +2,7 @@ package array
 
 import (
 	"math/rand/v2"
+	"slices"
 )
 
 type Constraint[E comparable] interface {
@@ -10,10 +11,17 @@ type Constraint[E comparable] interface {
 
 // In 返回指定元素是否都在集合中
 func In[T comparable](list []T, elems ...T) bool {
-	if len(list) < len(elems) {
+	listLen := len(list)
+	elemLen := len(elems)
+	if elemLen == 0 || listLen < elemLen {
 		return false
 	}
-	m := make(map[T]struct{}, len(list))
+	// 单元素
+	if elemLen == 1 {
+		return slices.Contains(list, elems[0])
+	}
+	// 多元素
+	m := make(map[T]struct{}, listLen)
 	for _, v := range list {
 		m[v] = struct{}{}
 	}
@@ -27,9 +35,22 @@ func In[T comparable](list []T, elems ...T) bool {
 
 // InT 返回指定元素是否都在集合中
 func InT[T Constraint[E], E comparable](list []T, elems ...E) bool {
-	if len(list) < len(elems) {
+	listLen := len(list)
+	elemLen := len(elems)
+	if elemLen == 0 || listLen < elemLen {
 		return false
 	}
+	// 单元素
+	if elemLen == 1 {
+		e := elems[0]
+		for _, v := range list {
+			if v.Element() == e {
+				return true
+			}
+		}
+		return false
+	}
+	// 多元素
 	m := make(map[E]struct{}, len(list))
 	for _, v := range list {
 		m[v.Element()] = struct{}{}

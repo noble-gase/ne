@@ -25,6 +25,7 @@ func (b *Bar) Element() string {
 }
 
 func TestIn(t *testing.T) {
+	assert.True(t, In([]int{1, 2, 3, 4, 5}, 4))
 	assert.True(t, In([]int{1, 2, 3, 4, 5}, 2, 4))
 	assert.True(t, In([]int64{1, 2, 3, 4, 5}, 2, 4))
 	assert.True(t, In([]float64{1.01, 2.02, 3.03, 4.04, 5.05}, 2.02, 4.04))
@@ -55,6 +56,7 @@ func TestInT(t *testing.T) {
 		},
 	}
 	assert.True(t, InT(fooArr, 2))
+	assert.True(t, InT(fooArr, 2, 4))
 
 	barArr := []*Bar{
 		{
@@ -79,6 +81,7 @@ func TestInT(t *testing.T) {
 		},
 	}
 	assert.True(t, InT(barArr, "2"))
+	assert.True(t, InT(barArr, "2", "4"))
 }
 
 func TestUniq(t *testing.T) {

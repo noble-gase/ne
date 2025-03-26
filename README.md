@@ -29,6 +29,8 @@ go get -u github.com/noble-gase/ne
 | protos    | 实现 `url.Values` 和 `proto.Message` 的相互转换 |
 | leveltree | 基于泛型的菜单和组织单位等分类层级树            |
 | timewheel | 简单实用的单层时间轮(支持一次性和多次重试任务)  |
+| retry     | 重试封装                                        |
+| steps     | 分批次处理切片                                  |
 | 辅助方法  | IP、file、time、string、version-compare 等      |
 
 > ⚠️ 注意：如需支持协程并发复用的 `errgroup` 请使用 👉 [氙-Xe](https://github.com/noble-gase/xe)

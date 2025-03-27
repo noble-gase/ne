@@ -29,8 +29,8 @@ func (ret *result) JSON(w http.ResponseWriter, r *http.Request) {
 
 func New(code codes.Code, data any) Result {
 	return &result{
-		Code: code.V(),
-		Msg:  code.M(),
+		Code: code.Val(),
+		Msg:  code.Msg(),
 		Data: data,
 	}
 }
@@ -47,5 +47,5 @@ func Err(err error) Result {
 	if ok {
 		return New(code, nil)
 	}
-	return New(codes.Unknown.New(err.Error()), nil)
+	return New(codes.Unknown, nil)
 }

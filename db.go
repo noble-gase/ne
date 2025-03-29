@@ -55,26 +55,29 @@ func NewDB(cfg *DBConfig) (*sql.DB, error) {
 func Transaction(ctx context.Context, db *sql.DB, fn func(ctx context.Context, tx *sql.Tx) error) (err error) {
 	tx, _err := db.BeginTx(ctx, nil)
 	if _err != nil {
-		err = fmt.Errorf("db.BeginTx: %w", _err)
+		err = fmt.Errorf("begin transaction: %w", _err)
 		return
 	}
 
 	defer func() {
 		if r := recover(); r != nil {
-			_ = tx.Rollback() // if panic, should rollback
-			err = fmt.Errorf("transaction panic recovered: %+v\n%s", r, string(debug.Stack()))
+			err = fmt.Errorf("transaction panic recovered: %+v", r)
+			if err_ := tx.Rollback(); err_ != nil {
+				err = fmt.Errorf("%w: rollback: %w", err, err_)
+			}
+			err = fmt.Errorf("%w\n%s", err, string(debug.Stack()))
 		}
 	}()
 
 	if err = fn(ctx, tx); err != nil {
 		if err_ := tx.Rollback(); err_ != nil {
-			err = fmt.Errorf("%w: tx.Rollback: %w", err, err_)
+			err = fmt.Errorf("%w: transaction rollback: %w", err, err_)
 		}
 		return
 	}
 
 	if _err = tx.Commit(); _err != nil {
-		err = fmt.Errorf("tx.Commit: %w", _err)
+		err = fmt.Errorf("transaction commit: %w", _err)
 		return
 	}
 	return

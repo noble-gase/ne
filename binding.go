@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/noble-gase/ne/form"
 	"github.com/noble-gase/ne/protos"
 	"github.com/noble-gase/ne/validator"
 	"google.golang.org/protobuf/proto"
@@ -19,26 +18,6 @@ func BindJSON(r *http.Request, obj any) error {
 		if err := json.NewDecoder(r.Body).Decode(obj); err != nil {
 			return err
 		}
-	}
-	return validator.ValidateStruct(obj)
-}
-
-// BindForm 解析Form表单并校验
-func BindForm(r *http.Request, obj any) error {
-	switch ContentType(r.Header) {
-	case ContentForm:
-		if err := r.ParseForm(); err != nil {
-			return err
-		}
-	case ContentMultipartForm:
-		if err := r.ParseMultipartForm(MaxFormMemory); err != nil {
-			if err != http.ErrNotMultipart {
-				return err
-			}
-		}
-	}
-	if err := form.MapForm(obj, r.PostForm); err != nil {
-		return err
 	}
 	return validator.ValidateStruct(obj)
 }

@@ -14,9 +14,9 @@ var ErrLockNil = errors.New("redlock: lock not acquired")
 
 // Mutex 分布式锁
 type Mutex interface {
-	// Lock 获取锁
+	// Lock 获取锁；未获取到会返回`ErrLockNil`
 	Lock(ctx context.Context) error
-	// TryLock 尝试获取锁
+	// TryLock 尝试获取锁；未获取到会返回`ErrLockNil`
 	TryLock(ctx context.Context, attempts int, interval time.Duration) error
 	// UnLock 释放锁
 	UnLock(ctx context.Context) error

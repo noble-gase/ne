@@ -38,8 +38,25 @@ func MarshalNoEscapeHTML(v any) ([]byte, error) {
 	return b, nil
 }
 
-// VersionCompare 语义化的版本比较，支持：>, >=, =, !=, <, <=, | (or), & (and).
-// 参数 `rangeVer` 示例：1.0.0, =1.0.0, >2.0.0, >=1.0.0&<2.0.0, <2.0.0|>3.0.0, !=4.0.4
+// VersionCompare 语义化的版本比较
+//
+//	支持：
+//		>
+//		>=
+//		=
+//		!=
+//		<
+//		<=
+//		| (or)
+//		& (and)
+//
+//	示例(rangeVer)：
+//		1.0.0
+//		=1.0.0
+//		>2.0.0
+//	    !=4.0.4
+//		>=1.0.0&<2.0.0
+//		<2.0.0|>3.0.0
 func VersionCompare(rangeVer, curVer string) (bool, error) {
 	semVer, err := version.NewVersion(curVer)
 	if err != nil {

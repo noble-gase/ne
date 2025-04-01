@@ -10,7 +10,7 @@ type Code interface {
 	// M returns the code message
 	Msg() string
 	// New returns a newly allocated code with the same value.
-	New(msg string, args ...any) Code
+	New(format string, args ...any) Code
 }
 
 type code struct {

@@ -1,6 +1,9 @@
 package codes
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 // Code the code definition for API
 type Code interface {
@@ -51,9 +54,21 @@ func Is(err error, target Code) bool {
 	if err == nil || target == nil {
 		return err == target
 	}
-	c, ok := err.(Code)
-	if !ok {
-		return false
+	var c code
+	if errors.As(err, &c) {
+		return c.Val() == target.Val()
 	}
-	return c.Val() == target.Val()
+	return false
+}
+
+// FromError returns a Code representation of err.
+func FromError(err error) Code {
+	if err == nil {
+		return OK
+	}
+	var c code
+	if errors.As(err, &c) {
+		return c
+	}
+	return Unknown.New(err.Error())
 }

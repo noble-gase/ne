@@ -2,6 +2,7 @@ package codes
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,6 +15,7 @@ func TestIs(t *testing.T) {
 	assert.False(t, Is(err, nil))
 	assert.False(t, Is(err, OK))
 	assert.True(t, Is(New(0, "success"), OK))
+	assert.True(t, Is(fmt.Errorf("oh yeah: %w", New(0, "success")), OK))
 	assert.False(t, Is(New(1, "failed"), OK))
 }
 

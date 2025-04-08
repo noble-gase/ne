@@ -2,6 +2,7 @@ package result
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/noble-gase/ne/codes"
@@ -27,25 +28,25 @@ func (ret *result) JSON(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func New(code codes.Code, data any) Result {
-	return &result{
+func New(code codes.Code, data ...any) Result {
+	ret := &result{
 		Code: code.Val(),
 		Msg:  code.Msg(),
-		Data: data,
 	}
+	if len(data) != 0 {
+		ret.Data = data[0]
+	}
+	return ret
 }
 
 func OK(data ...any) Result {
-	if len(data) == 0 {
-		return New(codes.OK, nil)
-	}
-	return New(codes.OK, data[0])
+	return New(codes.OK, data...)
 }
 
 func Err(err error) Result {
-	code, ok := err.(codes.Code)
-	if ok {
-		return New(code, nil)
+	var code codes.Code
+	if errors.As(err, &code) {
+		return New(code)
 	}
-	return New(codes.Unknown, nil)
+	return New(codes.Unknown)
 }

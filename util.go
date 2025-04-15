@@ -83,7 +83,7 @@ func IsUniqueDuplicateError(err error) bool {
 		return false
 	}
 	for _, s := range []string{
-		"Duplicate entry",            // MySQL
+		"Error 1062",                 // MySQL
 		"violates unique constraint", // Postgres
 		"UNIQUE constraint failed",   // SQLite
 	} {

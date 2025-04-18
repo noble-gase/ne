@@ -5,10 +5,6 @@ import (
 	"slices"
 )
 
-type Constraint[E comparable] interface {
-	Element() E
-}
-
 // In 返回指定元素是否都在集合中
 func In[T comparable](list []T, elems ...T) bool {
 	listLen := len(list)
@@ -16,10 +12,12 @@ func In[T comparable](list []T, elems ...T) bool {
 	if elemLen == 0 || listLen < elemLen {
 		return false
 	}
+
 	// 单元素
 	if elemLen == 1 {
 		return slices.Contains(list, elems[0])
 	}
+
 	// 多元素
 	m := make(map[T]struct{}, listLen)
 	for _, v := range list {
@@ -33,30 +31,32 @@ func In[T comparable](list []T, elems ...T) bool {
 	return true
 }
 
-// InT 返回指定元素是否都在集合中
-func InT[T Constraint[E], E comparable](list []T, elems ...E) bool {
+// InFunc 返回指定元素是否都在集合中
+func InFunc[T any, E comparable](fn func(v T) E, list []T, elems ...T) bool {
 	listLen := len(list)
 	elemLen := len(elems)
 	if elemLen == 0 || listLen < elemLen {
 		return false
 	}
+
 	// 单元素
 	if elemLen == 1 {
-		e := elems[0]
+		e := fn(elems[0])
 		for _, v := range list {
-			if v.Element() == e {
+			if fn(v) == e {
 				return true
 			}
 		}
 		return false
 	}
+
 	// 多元素
 	m := make(map[E]struct{}, len(list))
 	for _, v := range list {
-		m[v.Element()] = struct{}{}
+		m[fn(v)] = struct{}{}
 	}
 	for _, v := range elems {
-		if _, ok := m[v]; !ok {
+		if _, ok := m[fn(v)]; !ok {
 			return false
 		}
 	}
@@ -81,8 +81,8 @@ func Unique[T comparable](list []T) []T {
 	return ret
 }
 
-// UniqueT 集合去重
-func UniqueT[T Constraint[E], E comparable](list []T) []T {
+// UniqueFunc 集合去重
+func UniqueFunc[T any, E comparable](fn func(v T) E, list []T) []T {
 	var ret []T
 	if len(list) == 0 {
 		return ret
@@ -91,9 +91,10 @@ func UniqueT[T Constraint[E], E comparable](list []T) []T {
 	ret = make([]T, 0, len(list))
 	m := make(map[E]struct{}, len(list))
 	for _, v := range list {
-		if _, ok := m[v.Element()]; !ok {
+		e := fn(v)
+		if _, ok := m[e]; !ok {
 			ret = append(ret, v)
-			m[v.Element()] = struct{}{}
+			m[e] = struct{}{}
 		}
 	}
 	return ret
@@ -125,45 +126,56 @@ func Diff[T comparable](list1 []T, list2 []T) (ret1 []T, ret2 []T) {
 	return ret1, ret2
 }
 
-// DiffT 返回两个集合之间的差异
-func DiffT[T Constraint[E], E comparable](list1 []T, list2 []T) (ret1 []T, ret2 []T) {
+// DiffFunc 返回两个集合之间的差异
+func DiffFunc[T any, E comparable](fn func(v T) E, list1 []T, list2 []T) (ret1 []T, ret2 []T) {
 	m1 := map[E]struct{}{}
 	m2 := map[E]struct{}{}
 	for _, v := range list1 {
-		m1[v.Element()] = struct{}{}
+		m1[fn(v)] = struct{}{}
 	}
 	for _, v := range list2 {
-		m2[v.Element()] = struct{}{}
+		m2[fn(v)] = struct{}{}
 	}
 
 	ret1 = make([]T, 0)
 	ret2 = make([]T, 0)
 	for _, v := range list1 {
-		if _, ok := m2[v.Element()]; !ok {
+		if _, ok := m2[fn(v)]; !ok {
 			ret1 = append(ret1, v)
 		}
 	}
 	for _, v := range list2 {
-		if _, ok := m1[v.Element()]; !ok {
+		if _, ok := m1[fn(v)]; !ok {
 			ret2 = append(ret2, v)
 		}
 	}
 	return ret1, ret2
 }
 
-// Without 返回不包括所有给定值的切片
-func Without[T comparable](list []T, exclude ...T) []T {
+// Exclude 返回不包括所有给定值的切片
+func Exclude[T comparable](list []T, excludes ...T) []T {
+	if len(list) == 0 || len(excludes) == 0 {
+		return list
+	}
+
 	var ret []T
-	if len(list) == 0 {
+
+	// 单元素
+	if len(excludes) == 1 {
+		e := excludes[0]
+		for _, v := range list {
+			if v != e {
+				ret = append(ret, v)
+			}
+		}
 		return ret
 	}
 
-	m := make(map[T]struct{}, len(exclude))
-	for _, v := range exclude {
+	// 多元素
+	m := make(map[T]struct{}, len(excludes))
+	for _, v := range excludes {
 		m[v] = struct{}{}
 	}
-
-	ret = make([]T, 0, len(list))
 	for _, v := range list {
 		if _, ok := m[v]; !ok {
 			ret = append(ret, v)
@@ -172,21 +184,32 @@ func Without[T comparable](list []T, exclude ...T) []T {
 	return ret
 }
 
-// WithoutT 返回不包括所有给定值的切片
-func WithoutT[T Constraint[E], E comparable](list []T, exclude ...E) []T {
+// ExcludeFunc 返回不包括所有给定值的切片
+func ExcludeFunc[T any, E comparable](fn func(v T) E, list []T, excludes ...T) []T {
+	if len(list) == 0 || len(excludes) == 0 {
+		return list
+	}
+
 	var ret []T
-	if len(list) == 0 {
+
+	// 单元素
+	if len(excludes) == 1 {
+		e := fn(excludes[0])
+		for _, v := range list {
+			if fn(v) != e {
+				ret = append(ret, v)
+			}
+		}
 		return ret
 	}
 
-	m := make(map[E]struct{}, len(exclude))
-	for _, v := range exclude {
-		m[v] = struct{}{}
+	// 多元素
+	m := make(map[E]struct{}, len(excludes))
+	for _, v := range excludes {
+		m[fn(v)] = struct{}{}
 	}
-
-	ret = make([]T, 0, len(list))
 	for _, v := range list {
-		if _, ok := m[v.Element()]; !ok {
+		if _, ok := m[fn(v)]; !ok {
 			ret = append(ret, v)
 		}
 	}
@@ -195,12 +218,13 @@ func WithoutT[T Constraint[E], E comparable](list []T, exclude ...E) []T {
 
 // Intersect 返回两个集合的交集
 func Intersect[T comparable](list1 []T, list2 []T) []T {
+	var ret []T
+
 	m := make(map[T]struct{})
 	for _, v := range list1 {
 		m[v] = struct{}{}
 	}
 
-	ret := make([]T, 0)
 	for _, v := range list2 {
 		if _, ok := m[v]; ok {
 			ret = append(ret, v)
@@ -209,16 +233,17 @@ func Intersect[T comparable](list1 []T, list2 []T) []T {
 	return ret
 }
 
-// IntersectT 返回两个集合的交集
-func IntersectT[T Constraint[E], E comparable](list1 []T, list2 []T) []T {
+// IntersectFunc 返回两个集合的交集
+func IntersectFunc[T any, E comparable](fn func(v T) E, list1 []T, list2 []T) []T {
+	var ret []T
+
 	m := make(map[E]struct{})
 	for _, v := range list1 {
-		m[v.Element()] = struct{}{}
+		m[fn(v)] = struct{}{}
 	}
 
-	ret := make([]T, 0)
 	for _, v := range list2 {
-		if _, ok := m[v.Element()]; ok {
+		if _, ok := m[fn(v)]; ok {
 			ret = append(ret, v)
 		}
 	}
@@ -227,7 +252,7 @@ func IntersectT[T Constraint[E], E comparable](list1 []T, list2 []T) []T {
 
 // Union 返回两个集合的并集
 func Union[T comparable](lists ...[]T) []T {
-	ret := make([]T, 0)
+	var ret []T
 	m := make(map[T]struct{})
 	for _, list := range lists {
 		for _, v := range list {
@@ -240,15 +265,16 @@ func Union[T comparable](lists ...[]T) []T {
 	return ret
 }
 
-// UnionT 返回两个集合的并集
-func UnionT[T Constraint[E], E comparable](lists ...[]T) []T {
-	ret := make([]T, 0)
+// UnionFunc 返回两个集合的并集
+func UnionFunc[T any, E comparable](fn func(v T) E, lists ...[]T) []T {
+	var ret []T
 	m := make(map[E]struct{})
 	for _, list := range lists {
 		for _, v := range list {
-			if _, ok := m[v.Element()]; !ok {
+			e := fn(v)
+			if _, ok := m[e]; !ok {
 				ret = append(ret, v)
-				m[v.Element()] = struct{}{}
+				m[e] = struct{}{}
 			}
 		}
 	}
@@ -286,7 +312,7 @@ func PinTop[T any](list []T, index int) {
 }
 
 // PinTopF 置顶集合中满足条件的一个元素
-func PinTopFunc[T any](list []T, fn func(v T) bool) {
+func PinTopFunc[T any](fn func(v T) bool, list []T) {
 	index := 0
 	for i, v := range list {
 		if fn(v) {

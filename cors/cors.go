@@ -7,8 +7,9 @@ import (
 	"strings"
 )
 
+const wildcard = "*"
+
 const (
-	wildcard   = "*"
 	HeaderVary = "Vary"
 	HeaderACAO = "Access-Control-Allow-Origin"
 	HeaderACAM = "Access-Control-Allow-Methods"

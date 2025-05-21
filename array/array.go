@@ -357,6 +357,11 @@ func Filter[T any](list []T, fn func(i int, v T) bool) []T {
 // Map 返回处理后的新集合
 func Map[T any, E any](list []T, fn func(i int, v T) E) []E {
 	var ret []E
+	if len(list) == 0 {
+		return ret
+	}
+
+	ret = make([]E, 0, len(list))
 	for i, v := range list {
 		ret = append(ret, fn(i, v))
 	}

@@ -71,7 +71,7 @@ func Transaction(ctx context.Context, db *sql.DB, fn func(ctx context.Context, t
 
 	rollback := func(err error) error {
 		if e := tx.Rollback(); e != nil {
-			err = fmt.Errorf("%w: rollback: %w", err, e)
+			err = fmt.Errorf("%w; rollback: %w", err, e)
 		}
 		return err
 	}

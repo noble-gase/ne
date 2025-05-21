@@ -1,4 +1,4 @@
-package helper
+package logs
 
 import (
 	"os"
@@ -29,7 +29,7 @@ type LogConfig struct {
 	Options []zap.Option
 }
 
-func DebugLogger(options ...zap.Option) *zap.Logger {
+func Debug(options ...zap.Option) *zap.Logger {
 	cfg := zap.NewDevelopmentConfig()
 
 	cfg.DisableCaller = true
@@ -41,9 +41,9 @@ func DebugLogger(options ...zap.Option) *zap.Logger {
 	return logger
 }
 
-func NewLogger(cfg *LogConfig) *zap.Logger {
+func New(cfg *LogConfig) *zap.Logger {
 	if len(cfg.Filename) == 0 {
-		return DebugLogger(cfg.Options...)
+		return Debug(cfg.Options...)
 	}
 
 	ec := zap.NewProductionEncoderConfig()

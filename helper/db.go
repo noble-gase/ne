@@ -115,7 +115,7 @@ func TransactionX(ctx context.Context, db DB, fn func(ctx context.Context, tx TX
 	rollback := func(err error) error {
 		for k, v := range tx {
 			if e := v.Rollback(); e != nil {
-				err = fmt.Errorf("%w; %s.Rollback: %w", err, k, e)
+				err = fmt.Errorf("%w; rollback(%s): %w", err, k, e)
 			}
 		}
 		return err
@@ -136,7 +136,7 @@ func TransactionX(ctx context.Context, db DB, fn func(ctx context.Context, tx TX
 
 	for k, v := range tx {
 		if e := v.Commit(); e != nil {
-			err = rollback(fmt.Errorf("%s.Commit: %w", k, e))
+			err = rollback(fmt.Errorf("commit(%s): %w", k, e))
 			return
 		}
 	}

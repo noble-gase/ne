@@ -366,6 +366,10 @@ func Map[T any, E any](list []T, fn func(i int, v T) E) []E {
 // UniqMap 返回处理后的新集合(去重)
 func UniqMap[T any, E comparable](list []T, fn func(i int, v T) E) []E {
 	var ret []E
+	if len(list) == 0 {
+		return ret
+	}
+
 	m := make(map[E]struct{})
 	for i, v := range list {
 		e := fn(i, v)

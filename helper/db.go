@@ -37,7 +37,7 @@ type DBConfig struct {
 	ConnMaxIdleTime time.Duration
 }
 
-// NewDB sql.DB
+// NewDB returns a new sql.DB
 func NewDB(cfg *DBConfig) (*sql.DB, error) {
 	db, err := sql.Open(cfg.Driver, cfg.DSN)
 	if err != nil {

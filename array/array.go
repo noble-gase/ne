@@ -19,7 +19,7 @@ func In[T comparable](list []T, elems ...T) bool {
 	}
 
 	// 多元素
-	m := make(map[T]struct{}, listLen)
+	m := make(map[T]struct{})
 	for _, v := range list {
 		m[v] = struct{}{}
 	}
@@ -51,7 +51,7 @@ func InFunc[T any, E comparable](fn func(v T) E, list []T, elems ...T) bool {
 	}
 
 	// 多元素
-	m := make(map[E]struct{}, len(list))
+	m := make(map[E]struct{})
 	for _, v := range list {
 		m[fn(v)] = struct{}{}
 	}
@@ -70,8 +70,7 @@ func Unique[T comparable](list []T) []T {
 		return ret
 	}
 
-	ret = make([]T, 0, len(list))
-	m := make(map[T]struct{}, len(list))
+	m := make(map[T]struct{})
 	for _, v := range list {
 		if _, ok := m[v]; !ok {
 			ret = append(ret, v)
@@ -88,8 +87,7 @@ func UniqueFunc[T any, E comparable](fn func(v T) E, list []T) []T {
 		return ret
 	}
 
-	ret = make([]T, 0, len(list))
-	m := make(map[E]struct{}, len(list))
+	m := make(map[E]struct{})
 	for _, v := range list {
 		e := fn(v)
 		if _, ok := m[e]; !ok {
@@ -111,8 +109,6 @@ func Diff[T comparable](list1 []T, list2 []T) (ret1 []T, ret2 []T) {
 		m2[v] = struct{}{}
 	}
 
-	ret1 = make([]T, 0)
-	ret2 = make([]T, 0)
 	for _, v := range list1 {
 		if _, ok := m2[v]; !ok {
 			ret1 = append(ret1, v)
@@ -137,8 +133,6 @@ func DiffFunc[T any, E comparable](fn func(v T) E, list1 []T, list2 []T) (ret1 [
 		m2[fn(v)] = struct{}{}
 	}
 
-	ret1 = make([]T, 0)
-	ret2 = make([]T, 0)
 	for _, v := range list1 {
 		if _, ok := m2[fn(v)]; !ok {
 			ret1 = append(ret1, v)
@@ -172,7 +166,7 @@ func Exclude[T comparable](list []T, excludes ...T) []T {
 	}
 
 	// 多元素
-	m := make(map[T]struct{}, len(excludes))
+	m := make(map[T]struct{})
 	for _, v := range excludes {
 		m[v] = struct{}{}
 	}
@@ -204,7 +198,7 @@ func ExcludeFunc[T any, E comparable](fn func(v T) E, list []T, excludes ...T) [
 	}
 
 	// 多元素
-	m := make(map[E]struct{}, len(excludes))
+	m := make(map[E]struct{})
 	for _, v := range excludes {
 		m[fn(v)] = struct{}{}
 	}
@@ -347,4 +341,48 @@ func Chunk[T any](list []T, size int) [][]T {
 		ret = append(ret, list[end:len])
 	}
 	return ret
+}
+
+// Filter 过滤集合
+func Filter[T any](list []T, fn func(i int, v T) bool) []T {
+	var ret []T
+	for i, v := range list {
+		if fn(i, v) {
+			ret = append(ret, v)
+		}
+	}
+	return ret
+}
+
+// Map 返回处理后的新集合
+func Map[T any, E any](list []T, fn func(i int, v T) E) []E {
+	var ret []E
+	for i, v := range list {
+		ret = append(ret, fn(i, v))
+	}
+	return ret
+}
+
+// UniqMap 返回处理后的新集合(去重)
+func UniqMap[T any, E comparable](list []T, fn func(i int, v T) E) []E {
+	var ret []E
+	m := make(map[E]struct{})
+	for i, v := range list {
+		e := fn(i, v)
+		if _, ok := m[e]; !ok {
+			ret = append(ret, e)
+			m[e] = struct{}{}
+		}
+	}
+	return ret
+}
+
+// Associate 序列化一个集合为Map
+func Associate[T any, K comparable, V any](list []T, fn func(i int, v T) (K, V)) map[K]V {
+	m := make(map[K]V, len(list))
+	for i, v := range list {
+		k, e := fn(i, v)
+		m[k] = e
+	}
+	return m
 }

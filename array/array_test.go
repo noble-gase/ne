@@ -53,8 +53,8 @@ func TestDiff(t *testing.T) {
 	assert.Equal(t, []int{0, 6}, right2)
 
 	left3, right3 := Diff([]int{0, 1, 2, 3, 4, 5}, []int{0, 1, 2, 3, 4, 5})
-	assert.Equal(t, []int{}, left3)
-	assert.Equal(t, []int{}, right3)
+	assert.Nil(t, left3)
+	assert.Nil(t, right3)
 }
 
 func TestDiffFunc(t *testing.T) {
@@ -67,8 +67,8 @@ func TestDiffFunc(t *testing.T) {
 	assert.Equal(t, []Foo[int]{{ID: 0}, {ID: 6}}, right2)
 
 	left3, right3 := DiffFunc(func(v Foo[int]) int { return v.ID }, []Foo[int]{{ID: 0}, {ID: 1}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 5}}, []Foo[int]{{ID: 0}, {ID: 1}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 5}})
-	assert.Equal(t, []Foo[int]{}, left3)
-	assert.Equal(t, []Foo[int]{}, right3)
+	assert.Nil(t, left3)
+	assert.Nil(t, right3)
 }
 
 func TestExclude(t *testing.T) {
@@ -237,4 +237,54 @@ func TestChunk(t *testing.T) {
 
 	ret3 := Chunk(arr, 4)
 	assert.Equal(t, [][]int{{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10}}, ret3)
+}
+
+func TestFilter(t *testing.T) {
+	arr1 := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	ret1 := Filter(arr1, func(i int, v int) bool {
+		return v%2 == 0
+	})
+	assert.Equal(t, []int{2, 4, 6, 8, 10}, ret1)
+
+	arr2 := []Foo[int]{{ID: 1}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 5}, {ID: 6}, {ID: 7}, {ID: 8}, {ID: 9}, {ID: 10}}
+	ret2 := Filter(arr2, func(i int, v Foo[int]) bool {
+		return v.ID%2 == 0
+	})
+	assert.Equal(t, []Foo[int]{{ID: 2}, {ID: 4}, {ID: 6}, {ID: 8}, {ID: 10}}, ret2)
+}
+
+func TestMap(t *testing.T) {
+	arr1 := []Foo[int]{{ID: 1}, {ID: 2}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 4}, {ID: 5}}
+	ret1 := Map(arr1, func(i int, v Foo[int]) int {
+		return v.ID
+	})
+	assert.Equal(t, []int{1, 2, 2, 3, 4, 4, 5}, ret1)
+
+	arr2 := []Foo[int]{{ID: 1}, {ID: 2}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 4}, {ID: 5}}
+	ret2 := Map(arr2, func(i int, v Foo[int]) int {
+		return v.ID * 2
+	})
+	assert.Equal(t, []int{2, 4, 4, 6, 8, 8, 10}, ret2)
+}
+
+func TestUniqMap(t *testing.T) {
+	arr1 := []Foo[int]{{ID: 1}, {ID: 2}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 4}, {ID: 5}}
+	ret1 := UniqMap(arr1, func(i int, v Foo[int]) int {
+		return v.ID
+	})
+	assert.Equal(t, []int{1, 2, 3, 4, 5}, ret1)
+
+	arr2 := []Foo[int]{{ID: 1}, {ID: 2}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 4}, {ID: 5}}
+	ret2 := UniqMap(arr2, func(i int, v Foo[int]) int {
+		return v.ID * 2
+	})
+	assert.Equal(t, []int{2, 4, 6, 8, 10}, ret2)
+}
+
+func TestAssociate(t *testing.T) {
+	arr := []Foo[int]{{ID: 1}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 5}}
+	ret := Associate(arr, func(i int, v Foo[int]) (int, int) {
+		return v.ID, v.ID * 2
+	})
+	assert.Equal(t, map[int]int{1: 2, 2: 4, 3: 6, 4: 8, 5: 10}, ret)
 }

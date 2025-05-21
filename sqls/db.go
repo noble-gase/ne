@@ -9,8 +9,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// DBConfig 数据库初始化配置
-type DBConfig struct {
+// Config 数据库初始化配置
+type Config struct {
 	// Driver 驱动名称
 	Driver string
 	// DSN 数据源名称
@@ -30,7 +30,7 @@ type DBConfig struct {
 }
 
 // NewDB returns a new sql.DB
-func NewDB(cfg *DBConfig) (*sql.DB, error) {
+func NewDB(cfg *Config) (*sql.DB, error) {
 	db, err := sql.Open(cfg.Driver, cfg.DSN)
 	if err != nil {
 		return nil, err

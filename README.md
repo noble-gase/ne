@@ -30,6 +30,6 @@ go get -u github.com/noble-gase/ne
 | timewheel | 简单实用的单层时间轮(支持一次性和多次重试任务)  |
 | retry     | 重试封装                                        |
 | steps     | 分批次处理切片                                  |
-| 辅助方法  | IP、file、time、string、version-compare 等      |
+| helper    | IP、file、time、string、version-compare 等      |
 
 **Enjoy 😊**

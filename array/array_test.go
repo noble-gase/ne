@@ -7,7 +7,8 @@ import (
 )
 
 type Foo[T comparable] struct {
-	ID T
+	ID   T
+	Name string
 }
 
 func TestIn(t *testing.T) {
@@ -241,13 +242,13 @@ func TestChunk(t *testing.T) {
 
 func TestFilter(t *testing.T) {
 	arr1 := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-	ret1 := Filter(func(i int, v int) bool {
+	ret1 := Filter(func(v int) bool {
 		return v%2 == 0
 	}, arr1)
 	assert.Equal(t, []int{2, 4, 6, 8, 10}, ret1)
 
 	arr2 := []Foo[int]{{ID: 1}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 5}, {ID: 6}, {ID: 7}, {ID: 8}, {ID: 9}, {ID: 10}}
-	ret2 := Filter(func(i int, v Foo[int]) bool {
+	ret2 := Filter(func(v Foo[int]) bool {
 		return v.ID%2 == 0
 	}, arr2)
 	assert.Equal(t, []Foo[int]{{ID: 2}, {ID: 4}, {ID: 6}, {ID: 8}, {ID: 10}}, ret2)
@@ -255,13 +256,13 @@ func TestFilter(t *testing.T) {
 
 func TestMap(t *testing.T) {
 	arr1 := []Foo[int]{{ID: 1}, {ID: 2}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 4}, {ID: 5}}
-	ret1 := Map(func(i int, v Foo[int]) int {
+	ret1 := Map(func(v Foo[int]) int {
 		return v.ID
 	}, arr1)
 	assert.Equal(t, []int{1, 2, 2, 3, 4, 4, 5}, ret1)
 
 	arr2 := []Foo[int]{{ID: 1}, {ID: 2}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 4}, {ID: 5}}
-	ret2 := Map(func(i int, v Foo[int]) int {
+	ret2 := Map(func(v Foo[int]) int {
 		return v.ID * 2
 	}, arr2)
 	assert.Equal(t, []int{2, 4, 4, 6, 8, 8, 10}, ret2)
@@ -269,13 +270,13 @@ func TestMap(t *testing.T) {
 
 func TestUniqMap(t *testing.T) {
 	arr1 := []Foo[int]{{ID: 1}, {ID: 2}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 4}, {ID: 5}}
-	ret1 := UniqMap(func(i int, v Foo[int]) int {
+	ret1 := UniqMap(func(v Foo[int]) int {
 		return v.ID
 	}, arr1)
 	assert.Equal(t, []int{1, 2, 3, 4, 5}, ret1)
 
 	arr2 := []Foo[int]{{ID: 1}, {ID: 2}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 4}, {ID: 5}}
-	ret2 := UniqMap(func(i int, v Foo[int]) int {
+	ret2 := UniqMap(func(v Foo[int]) int {
 		return v.ID * 2
 	}, arr2)
 	assert.Equal(t, []int{2, 4, 6, 8, 10}, ret2)
@@ -283,13 +284,13 @@ func TestUniqMap(t *testing.T) {
 
 func TestFilterMap(t *testing.T) {
 	arr1 := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-	ret1 := FilterMap(func(i int, v int) (int, bool) {
+	ret1 := FilterMap(func(v int) (int, bool) {
 		return v * 2, v%2 == 0
 	}, arr1)
 	assert.Equal(t, []int{4, 8, 12, 16, 20}, ret1)
 
 	arr2 := []Foo[int]{{ID: 1}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 5}, {ID: 6}, {ID: 7}, {ID: 8}, {ID: 9}, {ID: 10}}
-	ret2 := FilterMap(func(i int, v Foo[int]) (int, bool) {
+	ret2 := FilterMap(func(v Foo[int]) (int, bool) {
 		return v.ID * 2, v.ID%2 == 0
 	}, arr2)
 	assert.Equal(t, []int{4, 8, 12, 16, 20}, ret2)
@@ -297,8 +298,32 @@ func TestFilterMap(t *testing.T) {
 
 func TestAssociate(t *testing.T) {
 	arr := []Foo[int]{{ID: 1}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 5}}
-	ret := Associate(func(i int, v Foo[int]) (int, int) {
+	ret := Associate(func(v Foo[int]) (int, int) {
 		return v.ID, v.ID * 2
 	}, arr)
 	assert.Equal(t, map[int]int{1: 2, 2: 4, 3: 6, 4: 8, 5: 10}, ret)
+}
+
+func TestFilterAssociate(t *testing.T) {
+	arr := []Foo[int]{{ID: 1}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 5}}
+	ret := FilterAssociate(func(v Foo[int]) (int, int, bool) {
+		return v.ID, v.ID * 2, v.ID%2 == 0
+	}, arr)
+	assert.Equal(t, map[int]int{2: 4, 4: 8}, ret)
+}
+
+func TestGroup(t *testing.T) {
+	arr := []Foo[int]{{ID: 1, Name: "a"}, {ID: 1, Name: "b"}, {ID: 1, Name: "c"}, {ID: 2, Name: "d"}, {ID: 2, Name: "e"}}
+	ret := Group(func(v Foo[int]) (int, string) {
+		return v.ID, v.Name
+	}, arr)
+	assert.Equal(t, map[int][]string{1: {"a", "b", "c"}, 2: {"d", "e"}}, ret)
+}
+
+func TestFilterGroup(t *testing.T) {
+	arr := []Foo[int]{{ID: 1, Name: "a"}, {ID: 1, Name: "b"}, {ID: 1, Name: "c"}, {ID: 2, Name: "d"}, {ID: 2, Name: "e"}}
+	ret := FilterGroup(func(v Foo[int]) (int, string, bool) {
+		return v.ID, v.Name, v.ID%2 == 0
+	}, arr)
+	assert.Equal(t, map[int][]string{2: {"d", "e"}}, ret)
 }

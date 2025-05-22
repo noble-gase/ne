@@ -344,10 +344,10 @@ func Chunk[T any](list []T, size int) [][]T {
 }
 
 // Filter 过滤集合
-func Filter[T any](fn func(i int, v T) bool, list []T) []T {
+func Filter[T any](fn func(v T) bool, list []T) []T {
 	var ret []T
-	for i, v := range list {
-		if fn(i, v) {
+	for _, v := range list {
+		if fn(v) {
 			ret = append(ret, v)
 		}
 	}
@@ -355,29 +355,29 @@ func Filter[T any](fn func(i int, v T) bool, list []T) []T {
 }
 
 // Map 返回处理后的新集合
-func Map[T any, E any](fn func(i int, v T) E, list []T) []E {
+func Map[T any, E any](fn func(v T) E, list []T) []E {
 	var ret []E
 	if len(list) == 0 {
 		return ret
 	}
 
 	ret = make([]E, 0, len(list))
-	for i, v := range list {
-		ret = append(ret, fn(i, v))
+	for _, v := range list {
+		ret = append(ret, fn(v))
 	}
 	return ret
 }
 
 // UniqMap 返回处理后的新集合(去重)
-func UniqMap[T any, E comparable](fn func(i int, v T) E, list []T) []E {
+func UniqMap[T any, E comparable](fn func(v T) E, list []T) []E {
 	var ret []E
 	if len(list) == 0 {
 		return ret
 	}
 
 	m := make(map[E]struct{})
-	for i, v := range list {
-		e := fn(i, v)
+	for _, v := range list {
+		e := fn(v)
 		if _, ok := m[e]; !ok {
 			ret = append(ret, e)
 			m[e] = struct{}{}
@@ -387,10 +387,10 @@ func UniqMap[T any, E comparable](fn func(i int, v T) E, list []T) []E {
 }
 
 // FilterMap 返回过滤并处理后的新集合
-func FilterMap[T any, E any](fn func(i int, v T) (E, bool), list []T) []E {
+func FilterMap[T any, E any](fn func(v T) (E, bool), list []T) []E {
 	var ret []E
-	for i, v := range list {
-		if e, ok := fn(i, v); ok {
+	for _, v := range list {
+		if e, ok := fn(v); ok {
 			ret = append(ret, e)
 		}
 	}
@@ -398,11 +398,43 @@ func FilterMap[T any, E any](fn func(i int, v T) (E, bool), list []T) []E {
 }
 
 // Associate 序列化一个集合为Map
-func Associate[T any, K comparable, V any](fn func(i int, v T) (K, V), list []T) map[K]V {
+func Associate[T any, K comparable, V any](fn func(v T) (K, V), list []T) map[K]V {
 	m := make(map[K]V, len(list))
-	for i, v := range list {
-		k, e := fn(i, v)
+	for _, v := range list {
+		k, e := fn(v)
 		m[k] = e
+	}
+	return m
+}
+
+// FilterAssociate 过滤并序列化一个集合为Map
+func FilterAssociate[T any, K comparable, V any](fn func(v T) (K, V, bool), list []T) map[K]V {
+	m := make(map[K]V, len(list))
+	for _, v := range list {
+		if k, e, ok := fn(v); ok {
+			m[k] = e
+		}
+	}
+	return m
+}
+
+// Group 序列化一个集合为分组合并后的Map
+func Group[T any, K comparable, V any](fn func(v T) (K, V), list []T) map[K][]V {
+	m := make(map[K][]V)
+	for _, v := range list {
+		k, e := fn(v)
+		m[k] = append(m[k], e)
+	}
+	return m
+}
+
+// FilterGroupBy 过滤并序列化一个集合为分组合并后的Map
+func FilterGroup[T any, K comparable, V any](fn func(v T) (K, V, bool), list []T) map[K][]V {
+	m := make(map[K][]V)
+	for _, v := range list {
+		if k, e, ok := fn(v); ok {
+			m[k] = append(m[k], e)
+		}
 	}
 	return m
 }

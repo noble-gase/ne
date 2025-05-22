@@ -9,8 +9,8 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-// LogConfig 日志初始化配置
-type LogConfig struct {
+// Config 日志初始化配置
+type Config struct {
 	// Filename 日志名称
 	Filename string
 	// Level 日志级别
@@ -41,7 +41,7 @@ func Debug(options ...zap.Option) *zap.Logger {
 	return logger
 }
 
-func New(cfg *LogConfig) *zap.Logger {
+func New(cfg *Config) *zap.Logger {
 	if len(cfg.Filename) == 0 {
 		return Debug(cfg.Options...)
 	}

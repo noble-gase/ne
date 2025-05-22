@@ -244,7 +244,7 @@ func IntersectFunc[T any, E comparable](fn func(v T) E, list1 []T, list2 []T) []
 	return ret
 }
 
-// Union 返回两个集合的并集
+// Union 返回集合的并集
 func Union[T comparable](lists ...[]T) []T {
 	var ret []T
 	m := make(map[T]struct{})
@@ -259,7 +259,7 @@ func Union[T comparable](lists ...[]T) []T {
 	return ret
 }
 
-// UnionFunc 返回两个集合的并集
+// UnionFunc 返回集合的并集
 func UnionFunc[T any, E comparable](fn func(v T) E, lists ...[]T) []T {
 	var ret []T
 	m := make(map[E]struct{})
@@ -305,7 +305,7 @@ func PinTop[T any](list []T, index int) {
 	}
 }
 
-// PinTopF 置顶集合中满足条件的一个元素
+// PinTopF 置顶集合中的一个元素
 func PinTopFunc[T any](fn func(v T) bool, list []T) {
 	index := 0
 	for i, v := range list {
@@ -344,7 +344,7 @@ func Chunk[T any](list []T, size int) [][]T {
 }
 
 // Filter 过滤集合
-func Filter[T any](list []T, fn func(i int, v T) bool) []T {
+func Filter[T any](fn func(i int, v T) bool, list []T) []T {
 	var ret []T
 	for i, v := range list {
 		if fn(i, v) {
@@ -355,7 +355,7 @@ func Filter[T any](list []T, fn func(i int, v T) bool) []T {
 }
 
 // Map 返回处理后的新集合
-func Map[T any, E any](list []T, fn func(i int, v T) E) []E {
+func Map[T any, E any](fn func(i int, v T) E, list []T) []E {
 	var ret []E
 	if len(list) == 0 {
 		return ret
@@ -369,7 +369,7 @@ func Map[T any, E any](list []T, fn func(i int, v T) E) []E {
 }
 
 // UniqMap 返回处理后的新集合(去重)
-func UniqMap[T any, E comparable](list []T, fn func(i int, v T) E) []E {
+func UniqMap[T any, E comparable](fn func(i int, v T) E, list []T) []E {
 	var ret []E
 	if len(list) == 0 {
 		return ret
@@ -387,7 +387,7 @@ func UniqMap[T any, E comparable](list []T, fn func(i int, v T) E) []E {
 }
 
 // Associate 序列化一个集合为Map
-func Associate[T any, K comparable, V any](list []T, fn func(i int, v T) (K, V)) map[K]V {
+func Associate[T any, K comparable, V any](fn func(i int, v T) (K, V), list []T) map[K]V {
 	m := make(map[K]V, len(list))
 	for i, v := range list {
 		k, e := fn(i, v)

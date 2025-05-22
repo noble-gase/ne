@@ -281,6 +281,20 @@ func TestUniqMap(t *testing.T) {
 	assert.Equal(t, []int{2, 4, 6, 8, 10}, ret2)
 }
 
+func TestFilterMap(t *testing.T) {
+	arr1 := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	ret1 := FilterMap(func(i int, v int) (int, bool) {
+		return v * 2, v%2 == 0
+	}, arr1)
+	assert.Equal(t, []int{4, 8, 12, 16, 20}, ret1)
+
+	arr2 := []Foo[int]{{ID: 1}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 5}, {ID: 6}, {ID: 7}, {ID: 8}, {ID: 9}, {ID: 10}}
+	ret2 := FilterMap(func(i int, v Foo[int]) (int, bool) {
+		return v.ID * 2, v.ID%2 == 0
+	}, arr2)
+	assert.Equal(t, []int{4, 8, 12, 16, 20}, ret2)
+}
+
 func TestAssociate(t *testing.T) {
 	arr := []Foo[int]{{ID: 1}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 5}}
 	ret := Associate(func(i int, v Foo[int]) (int, int) {

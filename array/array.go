@@ -386,6 +386,17 @@ func UniqMap[T any, E comparable](fn func(i int, v T) E, list []T) []E {
 	return ret
 }
 
+// FilterMap 返回过滤并处理后的新集合
+func FilterMap[T any, E any](fn func(i int, v T) (E, bool), list []T) []E {
+	var ret []E
+	for i, v := range list {
+		if e, ok := fn(i, v); ok {
+			ret = append(ret, e)
+		}
+	}
+	return ret
+}
+
 // Associate 序列化一个集合为Map
 func Associate[T any, K comparable, V any](fn func(i int, v T) (K, V), list []T) map[K]V {
 	m := make(map[K]V, len(list))

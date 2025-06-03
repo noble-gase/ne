@@ -16,7 +16,7 @@ go get -u github.com/noble-gase/ne
 
 | 模块      | 说明                                            |
 | --------- | ----------------------------------------------- |
-| array     | 切片的常用操作                                  |
+| array     | 切片常用操作                                  |
 | hashes    | 封装便于使用                                    |
 | crypts    | 封装便于使用(支持aes&rsa)                       |
 | mutex     | 基于 Redis 的分布式锁                           |

@@ -3,6 +3,7 @@ package mutex
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -24,7 +25,7 @@ type Mutex interface {
 
 // redLock 基于「Redis」实现的分布式锁
 type redLock struct {
-	cli   *redis.Client
+	cli   redis.UniversalClient
 	key   string
 	ttl   time.Duration
 	token string
@@ -91,7 +92,7 @@ func (l *redLock) lock(ctx context.Context) error {
 			if errors.Is(_err, redis.Nil) {
 				return err
 			}
-			return _err
+			return fmt.Errorf("SET-NX: %w; GET: %w", err, _err)
 		}
 		if v == token {
 			l.token = token
@@ -105,7 +106,7 @@ func (l *redLock) lock(ctx context.Context) error {
 }
 
 // RedLock 基于Redis实现的分布式锁实例
-func RedLock(cli *redis.Client, key string, ttl time.Duration) Mutex {
+func RedLock(cli redis.UniversalClient, key string, ttl time.Duration) Mutex {
 	mutex := &redLock{
 		cli: cli,
 		key: key,

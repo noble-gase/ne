@@ -15,6 +15,14 @@ var ErrClientNil = errors.New("redis client is nil (forgotten initialize?)")
 // ErrLockNil 未获取到锁
 var ErrLockNil = errors.New("redlock: lock not acquired")
 
+const script = `
+if redis.call('get', KEYS[1]) == ARGV[1] then
+	return redis.call('del', KEYS[1])
+else
+	return 0
+end
+`
+
 // Mutex 分布式锁
 type Mutex interface {
 	// Lock 获取锁；未获取到会返回`ErrLockNil`
@@ -76,14 +84,6 @@ func (l *redLock) UnLock(ctx context.Context) error {
 	if l.cli == nil {
 		return ErrClientNil
 	}
-
-	script := `
-if redis.call('get', KEYS[1]) == ARGV[1] then
-	return redis.call('del', KEYS[1])
-else
-	return 0
-end
-`
 	return l.cli.Eval(context.WithoutCancel(ctx), script, []string{l.key}, l.token).Err()
 }
 

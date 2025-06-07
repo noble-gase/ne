@@ -3,9 +3,12 @@ package sqls
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"runtime/debug"
 )
+
+var ErrDbNil = errors.New("db is nil (forgotten initialize?)")
 
 type (
 	DB = map[string]*sql.DB
@@ -14,6 +17,11 @@ type (
 
 // Transaction 执行数据库事务
 func Transaction(ctx context.Context, db *sql.DB, fn func(ctx context.Context, tx *sql.Tx) error, opts ...*sql.TxOptions) (err error) {
+	if db == nil {
+		err = ErrDbNil
+		return
+	}
+
 	var opt *sql.TxOptions
 	if len(opts) != 0 {
 		opt = opts[0]
@@ -60,6 +68,11 @@ func TransactionX(ctx context.Context, db DB, fn func(ctx context.Context, tx TX
 
 	tx := make(TX, len(db))
 	for k, v := range db {
+		if v == nil {
+			err = fmt.Errorf("db(%s) is nil (forgotten initialize?)", k)
+			return
+		}
+
 		x, e := v.BeginTx(ctx, opt)
 		if e != nil {
 			err = fmt.Errorf("begin transaction (%s): %w", k, e)

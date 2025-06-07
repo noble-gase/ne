@@ -10,6 +10,8 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+var ErrClientNil = errors.New("redis client is nil (forgotten initialize?)")
+
 // ErrLockNil 未获取到锁
 var ErrLockNil = errors.New("redlock: lock not acquired")
 
@@ -71,6 +73,9 @@ func (l *redLock) UnLock(ctx context.Context) error {
 	if len(l.token) == 0 {
 		return nil
 	}
+	if l.cli == nil {
+		return ErrClientNil
+	}
 
 	script := `
 if redis.call('get', KEYS[1]) == ARGV[1] then
@@ -83,7 +88,12 @@ end
 }
 
 func (l *redLock) lock(ctx context.Context) error {
+	if l.cli == nil {
+		return ErrClientNil
+	}
+
 	token := uuid.New().String()
+
 	ok, err := l.cli.SetNX(ctx, l.key, token, l.ttl).Result()
 	if err != nil {
 		// 尝试GET一次：避免因redis网络错误导致误加锁

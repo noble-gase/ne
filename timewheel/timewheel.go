@@ -12,7 +12,7 @@ import (
 )
 
 type (
-	// TaskFn 任务方法，返回下一次执行的延迟时间，若返回0，则表示不再执行
+	// TaskFn 任务方法，返回下一次执行的延迟时间；若返回0，则表示不再执行
 	TaskFn func(ctx context.Context, taskId string, attempts int64) time.Duration
 
 	// CtxErrFn 任务 context「取消/超时」的处理方法
@@ -138,9 +138,9 @@ func (tw *timewheel) process(slot int) {
 func (tw *timewheel) do(t *task) {
 	go func(t *task) {
 		defer func() {
-			if rerr := recover(); rerr != nil {
+			if err := recover(); err != nil {
 				if tw.panicFn != nil {
-					tw.panicFn(t.ctx, t.id, rerr, debug.Stack())
+					tw.panicFn(t.ctx, t.id, err, debug.Stack())
 				}
 			}
 		}()

@@ -2,9 +2,9 @@ package helper
 
 import "fmt"
 
-type M = map[string]any
-
 type X map[string]any
+
+type M = map[string]any
 
 // Size 字节大小
 type Size int64

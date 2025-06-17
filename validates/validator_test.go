@@ -1,4 +1,4 @@
-package validator
+package validates
 
 import (
 	"database/sql"
@@ -13,7 +13,7 @@ func NullStringRequired(fl validator.FieldLevel) bool {
 	return len(fl.Field().String()) != 0
 }
 
-func NullIntGTE(fl validator.FieldLevel) bool {
+func NullIntGte(fl validator.FieldLevel) bool {
 	i, err := strconv.ParseInt(fl.Param(), 0, 64)
 	if err != nil {
 		return false
@@ -35,9 +35,9 @@ func TestDefaultValidator(t *testing.T) {
 
 	opts := []Option{
 		WithValuerType(sql.NullString{}, sql.NullInt64{}),
-		WithValidation("nullint_gte", NullIntGTE),
+		WithValidateFunc("nullint_gte", NullIntGte),
 		WithTranslation("nullint_gte", "{0}必须大于或等于{1}", true),
-		WithValidation("nullstring_required", NullStringRequired),
+		WithValidateFunc("nullstring_required", NullStringRequired),
 		WithTranslation("nullstring_required", "{0}为必填字段", true),
 	}
 
@@ -62,9 +62,9 @@ func TestDefaultValidator(t *testing.T) {
 func TestNewValidator(t *testing.T) {
 	testV := New(
 		WithValuerType(sql.NullString{}, sql.NullInt64{}),
-		WithValidation("nullint_gte", NullIntGTE),
+		WithValidateFunc("nullint_gte", NullIntGte),
 		WithTranslation("nullint_gte", "{0}必须大于或等于{1}", true),
-		WithValidation("nullstring_required", NullStringRequired),
+		WithValidateFunc("nullstring_required", NullStringRequired),
 		WithTranslation("nullstring_required", "{0}为必填字段", true),
 	)
 

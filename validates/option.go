@@ -1,4 +1,4 @@
-package validator
+package validates
 
 import (
 	"database/sql/driver"
@@ -31,21 +31,20 @@ func WithValuerType(types ...driver.Valuer) Option {
 				val, _ := valuer.Value()
 				return val
 			}
-
 			return nil
 		}, customTypes...)
 	}
 }
 
-// WithValidation 注册自定义验证器
-func WithValidation(tag string, fn validator.Func, callValidationEvenIfNull ...bool) Option {
+// WithValidateFunc 注册自定义验证器
+func WithValidateFunc(tag string, fn validator.Func, callValidationEvenIfNull ...bool) Option {
 	return func(validate *validator.Validate, trans ut.Translator) {
 		_ = validate.RegisterValidation(tag, fn, callValidationEvenIfNull...)
 	}
 }
 
-// WithValidationCtx 注册带Context的自定义验证器
-func WithValidationCtx(tag string, fn validator.FuncCtx, callValidationEvenIfNull ...bool) Option {
+// WithValidateFuncX 注册带Context的自定义验证器
+func WithValidateFuncX(tag string, fn validator.FuncCtx, callValidationEvenIfNull ...bool) Option {
 	return func(validate *validator.Validate, trans ut.Translator) {
 		_ = validate.RegisterValidationCtx(tag, fn, callValidationEvenIfNull...)
 	}

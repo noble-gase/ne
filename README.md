@@ -16,7 +16,7 @@ go get -u github.com/noble-gase/ne
 
 | 模块      | 说明                                            |
 | --------- | ----------------------------------------------- |
-| array     | 切片常用操作                                  |
+| array     | 切片常用操作                                    |
 | hashes    | 封装便于使用                                    |
 | crypts    | 封装便于使用(支持aes&rsa)                       |
 | mutex     | 基于 Redis 的分布式锁                           |
@@ -27,7 +27,6 @@ go get -u github.com/noble-gase/ne
 | images    | 图片处理，如：缩略图、裁切、标注等              |
 | protos    | 实现 `url.Values` 和 `proto.Message` 的相互转换 |
 | leveltree | 基于泛型的菜单和组织单位等分类层级树            |
-| timewheel | 简单实用的单层时间轮(支持一次性和多次重试任务)  |
 | retry     | 重试封装                                        |
 | steps     | 分批次处理切片                                  |
 | helper    | IP、file、time、string、version-compare 等      |

@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/noble-gase/ne/protos"
-	"github.com/noble-gase/ne/validator"
+	"github.com/noble-gase/ne/validates"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -19,7 +19,7 @@ func BindJSON(r *http.Request, obj any) error {
 			return err
 		}
 	}
-	return validator.ValidateStruct(obj)
+	return validates.ValidateStruct(obj)
 }
 
 // BindProto 解析Proto请求体并校验

@@ -1,4 +1,4 @@
-package validator
+package validates
 
 import (
 	"context"
@@ -73,7 +73,7 @@ func (v *Validator) Engine() any {
 // New 生成一个验证器实例
 //
 //	在Gin中使用：
-//	binding.Validator = validator.New()
+//	binding.Validator = validates.New()
 func New(opts ...Option) *Validator {
 	validate := validator.New()
 	validate.SetTagName("valid")

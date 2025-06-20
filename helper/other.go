@@ -12,6 +12,10 @@ import (
 	"github.com/hashicorp/go-version"
 )
 
+type NilError string
+
+func (e NilError) Error() string { return string(e) }
+
 // Nonce 生成随机串(size应为偶数)
 func Nonce(size uint8) string {
 	nonce := make([]byte, size/2)

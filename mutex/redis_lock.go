@@ -7,13 +7,14 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/noble-gase/ne/helper"
 	"github.com/redis/go-redis/v9"
 )
 
-var ErrClientNil = errors.New("redis client is nil (forgotten initialize?)")
+// Nil 未获取到锁
+var Nil = helper.NilError("redlock: nil")
 
-// ErrLockNil 未获取到锁
-var ErrLockNil = errors.New("redlock: lock not acquired")
+var ErrClientNil = errors.New("redis client is nil (forgotten initialize?)")
 
 const script = `
 if redis.call('get', KEYS[1]) == ARGV[1] then
@@ -25,9 +26,9 @@ end
 
 // Mutex 分布式锁
 type Mutex interface {
-	// Lock 获取锁；未获取到会返回`ErrLockNil`
+	// Lock 获取锁（未获取到：err = mutex.Nil）
 	Lock(ctx context.Context) error
-	// TryLock 尝试获取锁；未获取到会返回`ErrLockNil`
+	// TryLock 尝试获取锁（未获取到：err = mutex.Nil）
 	TryLock(ctx context.Context, attempts int, interval time.Duration) error
 	// UnLock 释放锁
 	UnLock(ctx context.Context) error
@@ -54,7 +55,7 @@ func (l *redLock) Lock(ctx context.Context) error {
 	if len(l.token) != 0 {
 		return nil
 	}
-	return ErrLockNil
+	return Nil
 }
 
 func (l *redLock) TryLock(ctx context.Context, attempts int, interval time.Duration) error {
@@ -74,7 +75,7 @@ func (l *redLock) TryLock(ctx context.Context, attempts int, interval time.Durat
 		}
 		time.Sleep(interval)
 	}
-	return ErrLockNil
+	return Nil
 }
 
 func (l *redLock) UnLock(ctx context.Context) error {

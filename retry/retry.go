@@ -8,7 +8,7 @@ import (
 // Retry 重试
 func Retry(ctx context.Context, fn func(ctx context.Context) error, attempts int, sleep time.Duration) (err error) {
 	threshold := attempts - 1
-	for i := 0; i < attempts; i++ {
+	for i := range attempts {
 		err = fn(ctx)
 		if err == nil || i >= threshold {
 			return

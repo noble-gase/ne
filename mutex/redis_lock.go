@@ -29,7 +29,7 @@ type Mutex interface {
 	// Lock 获取锁（未获取到：err = mutex.Nil）
 	Lock(ctx context.Context) error
 	// TryLock 尝试获取锁（未获取到：err = mutex.Nil）
-	TryLock(ctx context.Context, attempts int, interval time.Duration) error
+	TryLock(ctx context.Context, attempts int, duration time.Duration) error
 	// UnLock 释放锁
 	UnLock(ctx context.Context) error
 }
@@ -58,8 +58,8 @@ func (l *redLock) Lock(ctx context.Context) error {
 	return Nil
 }
 
-func (l *redLock) TryLock(ctx context.Context, attempts int, interval time.Duration) error {
-	for i := 0; i < attempts; i++ {
+func (l *redLock) TryLock(ctx context.Context, attempts int, duration time.Duration) error {
+	for i := range attempts {
 		select {
 		case <-ctx.Done(): // timeout or canceled
 			return ctx.Err()
@@ -73,7 +73,9 @@ func (l *redLock) TryLock(ctx context.Context, attempts int, interval time.Durat
 		if len(l.token) != 0 {
 			return nil
 		}
-		time.Sleep(interval)
+		if i < attempts-1 {
+			time.Sleep(duration)
+		}
 	}
 	return Nil
 }

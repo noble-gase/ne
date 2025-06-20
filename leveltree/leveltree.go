@@ -16,7 +16,7 @@ func buildTree[T LevelNode[E], E comparable](classify map[E][]T, rootId E) []*Le
 	nodes := classify[rootId]
 	count := len(nodes)
 	root := make([]*LevelTree[T, E], 0, count)
-	for i := 0; i < count; i++ {
+	for i := range count {
 		node := nodes[i]
 		root = append(root, &LevelTree[T, E]{
 			Data:     node,

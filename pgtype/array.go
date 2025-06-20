@@ -30,7 +30,7 @@ var (
 // Scanning multi-dimensional arrays is not supported. Arrays where the lower
 // bound is not one (such as `[0:0]={1}') are not supported. If need, suggest
 // use [pgtype](https://github.com/jackc/pgtype)
-func Array(a interface{}) interface {
+func Array(a any) interface {
 	driver.Valuer
 	sql.Scanner
 } {
@@ -80,7 +80,7 @@ type ArrayDelimiter interface {
 type BoolArray []bool
 
 // Scan implements the sql.Scanner interface.
-func (a *BoolArray) Scan(src interface{}) error {
+func (a *BoolArray) Scan(src any) error {
 	switch v := src.(type) {
 	case []byte:
 		return a.scanBytes(v)
@@ -130,7 +130,7 @@ func (a BoolArray) Value() (driver.Value, error) {
 		// There will be exactly two curly brackets, N bytes of values,
 		// and N-1 bytes of delimiters.
 		b := make([]byte, 1+2*n)
-		for i := 0; i < n; i++ {
+		for i := range n {
 			b[2*i] = ','
 			if a[i] {
 				b[1+2*i] = 't'
@@ -149,7 +149,7 @@ func (a BoolArray) Value() (driver.Value, error) {
 type ByteaArray [][]byte
 
 // Scan implements the sql.Scanner interface.
-func (a *ByteaArray) Scan(src interface{}) error {
+func (a *ByteaArray) Scan(src any) error {
 	switch v := src.(type) {
 	case []byte:
 		return a.scanBytes(v)
@@ -217,7 +217,7 @@ func (a ByteaArray) Value() (driver.Value, error) {
 type Float64Array []float64
 
 // Scan implements the sql.Scanner interface.
-func (a *Float64Array) Scan(src interface{}) error {
+func (a *Float64Array) Scan(src any) error {
 	switch v := src.(type) {
 	case []byte:
 		return a.scanBytes(v)
@@ -276,7 +276,7 @@ func (a Float64Array) Value() (driver.Value, error) {
 type Float32Array []float32
 
 // Scan implements the sql.Scanner interface.
-func (a *Float32Array) Scan(src interface{}) error {
+func (a *Float32Array) Scan(src any) error {
 	switch v := src.(type) {
 	case []byte:
 		return a.scanBytes(v)
@@ -334,7 +334,7 @@ func (a Float32Array) Value() (driver.Value, error) {
 
 // GenericArray implements the driver.Valuer and sql.Scanner interfaces for
 // an array or slice of any dimension.
-type GenericArray struct{ A interface{} }
+type GenericArray struct{ A any }
 
 func (GenericArray) evaluateDestination(rt reflect.Type) (reflect.Type, func([]byte, reflect.Value) error, string) {
 	var assign func([]byte, reflect.Value) error
@@ -372,7 +372,7 @@ FoundType:
 }
 
 // Scan implements the sql.Scanner interface.
-func (a GenericArray) Scan(src interface{}) error {
+func (a GenericArray) Scan(src any) error {
 	dpv := reflect.ValueOf(a.A)
 	switch {
 	case dpv.Kind() != reflect.Ptr:
@@ -414,8 +414,8 @@ func (a GenericArray) scanBytes(src []byte, dv reflect.Value) error {
 	// TODO allow multidimensional
 
 	if len(dims) > 1 {
-		return fmt.Errorf("pgtype: scanning from multidimensional ARRAY%s is not implemented",
-			strings.Replace(fmt.Sprint(dims), " ", "][", -1))
+		s := strings.ReplaceAll(fmt.Sprint(dims), " ", "][")
+		return fmt.Errorf("pgtype: scanning from multidimensional ARRAY%s is not implemented", s)
 	}
 
 	// Treat a zero-dimensional array like an array with a single dimension of zero.
@@ -428,8 +428,8 @@ func (a GenericArray) scanBytes(src []byte, dv reflect.Value) error {
 		case reflect.Slice:
 		case reflect.Array:
 			if rt.Len() != dims[i] {
-				return fmt.Errorf("pgtype: cannot convert ARRAY%s to %s",
-					strings.Replace(fmt.Sprint(dims), " ", "][", -1), dv.Type())
+				s := strings.ReplaceAll(fmt.Sprint(dims), " ", "][")
+				return fmt.Errorf("pgtype: cannot convert ARRAY%s to %s", s, dv.Type())
 			}
 		default:
 			// TODO handle multidimensional
@@ -490,7 +490,7 @@ func (a GenericArray) Value() (driver.Value, error) {
 type Int64Array []int64
 
 // Scan implements the sql.Scanner interface.
-func (a *Int64Array) Scan(src interface{}) error {
+func (a *Int64Array) Scan(src any) error {
 	switch v := src.(type) {
 	case []byte:
 		return a.scanBytes(v)
@@ -548,7 +548,7 @@ func (a Int64Array) Value() (driver.Value, error) {
 type Int32Array []int32
 
 // Scan implements the sql.Scanner interface.
-func (a *Int32Array) Scan(src interface{}) error {
+func (a *Int32Array) Scan(src any) error {
 	switch v := src.(type) {
 	case []byte:
 		return a.scanBytes(v)
@@ -608,7 +608,7 @@ func (a Int32Array) Value() (driver.Value, error) {
 type StringArray []string
 
 // Scan implements the sql.Scanner interface.
-func (a *StringArray) Scan(src interface{}) error {
+func (a *StringArray) Scan(src any) error {
 	switch v := src.(type) {
 	case []byte:
 		return a.scanBytes(v)
@@ -704,13 +704,14 @@ func appendArrayElement(b []byte, rv reflect.Value) ([]byte, string, error) {
 		}
 	}
 
-	del := ","
-	var err error
-	var iv interface{} = rv.Interface()
+	iv := rv.Interface()
 
+	del := ","
 	if ad, ok := iv.(ArrayDelimiter); ok {
 		del = ad.ArrayDelimiter()
 	}
+
+	var err error
 
 	if iv, err = driver.DefaultParameterConverter.ConvertValue(iv); err != nil {
 		return b, del, err

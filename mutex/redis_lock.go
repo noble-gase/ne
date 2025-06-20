@@ -16,13 +16,13 @@ var Nil = helper.NilError("redlock: nil")
 
 var ErrClientNil = errors.New("redis client is nil (forgotten initialize?)")
 
-const script = `
-if redis.call('get', KEYS[1]) == ARGV[1] then
-	return redis.call('del', KEYS[1])
+var script = redis.NewScript(`
+if redis.call("GET", KEYS[1]) == ARGV[1] then
+	return redis.call("DEL", KEYS[1])
 else
 	return 0
 end
-`
+`)
 
 // Mutex 分布式锁
 type Mutex interface {
@@ -87,7 +87,7 @@ func (l *redLock) UnLock(ctx context.Context) error {
 	if l.cli == nil {
 		return ErrClientNil
 	}
-	return l.cli.Eval(context.WithoutCancel(ctx), script, []string{l.key}, l.token).Err()
+	return script.Run(context.WithoutCancel(ctx), l.cli, []string{l.key}, l.token).Err()
 }
 
 func (l *redLock) lock(ctx context.Context) error {

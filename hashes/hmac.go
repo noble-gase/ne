@@ -6,7 +6,6 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 )
 
 // HMacSHA1 计算hmac-sha1值
@@ -24,11 +23,11 @@ func HMacSHA256(key, str string) string {
 }
 
 // HMac 计算指定hash算法的hmac值
-func HMac(hash crypto.Hash, key, str string) (string, error) {
+func HMac(hash crypto.Hash, key, str string) string {
 	if !hash.Available() {
-		return "", fmt.Errorf("crypto: requested hash function (%s) is unavailable", hash.String())
+		return ""
 	}
 	h := hmac.New(hash.New, []byte(key))
 	h.Write([]byte(str))
-	return hex.EncodeToString(h.Sum(nil)), nil
+	return hex.EncodeToString(h.Sum(nil))
 }

@@ -61,9 +61,6 @@ func TestHash(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		v, err := Hash(tt.args.hash, tt.args.s)
-
-		assert.Nil(t, err)
-		assert.Equal(t, tt.want, v)
+		assert.Equal(t, tt.want, Hash(tt.args.hash, tt.args.s))
 	}
 }

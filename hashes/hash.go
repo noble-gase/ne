@@ -6,7 +6,6 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 )
 
 // MD5 计算md5值
@@ -31,11 +30,11 @@ func SHA256(s string) string {
 }
 
 // Hash 计算指定算法的hash值
-func Hash(hash crypto.Hash, str string) (string, error) {
+func Hash(hash crypto.Hash, str string) string {
 	if !hash.Available() {
-		return "", fmt.Errorf("crypto: requested hash function (%s) is unavailable", hash.String())
+		return ""
 	}
 	h := hash.New()
 	h.Write([]byte(str))
-	return hex.EncodeToString(h.Sum(nil)), nil
+	return hex.EncodeToString(h.Sum(nil))
 }

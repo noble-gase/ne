@@ -58,9 +58,6 @@ func TestHMac(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		v, err := HMac(tt.args.hash, tt.args.key, tt.args.s)
-
-		assert.Nil(t, err)
-		assert.Equal(t, tt.want, v)
+		assert.Equal(t, tt.want, HMac(tt.args.hash, tt.args.key, tt.args.s))
 	}
 }

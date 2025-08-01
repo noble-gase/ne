@@ -20,6 +20,6 @@ func TestIs(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
-	t.Log(OK.New("success"))
-	t.Log(Unknown.New("user(id=%d) not found", 1))
+	t.Log(OK.Wrap("success"))
+	t.Log(Unknown.Wrap("user(id=%d) not found", 1))
 }

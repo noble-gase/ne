@@ -12,8 +12,8 @@ type Code interface {
 	Val() int
 	// M returns the code message
 	Msg() string
-	// New returns a newly allocated code with the same value.
-	New(format string, args ...any) Code
+	// Wrap returns a newly allocated code with the same value.
+	Wrap(format string, args ...any) Code
 }
 
 type code struct {
@@ -33,7 +33,7 @@ func (c code) Msg() string {
 	return c.m
 }
 
-func (c code) New(format string, args ...any) Code {
+func (c code) Wrap(format string, args ...any) Code {
 	if len(args) == 0 {
 		return code{v: c.v, m: format}
 	}
@@ -70,5 +70,5 @@ func FromError(err error) Code {
 	if errors.As(err, &c) {
 		return c
 	}
-	return Unknown.New(err.Error())
+	return Unknown.Wrap(err.Error())
 }

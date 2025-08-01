@@ -42,11 +42,11 @@ func Get[T any](ctx context.Context, cli redis.UniversalClient, key string, fn f
 		// 缓存数据
 		b, _err := json.Marshal(data)
 		if _err != nil {
-			slog.ErrorContext(ctx, "[caches:Get] marshal data failed", slog.String("key", key), slog.String("err", _err.Error()))
+			slog.ErrorContext(ctx, "[caches:Get] marshal data failed", slog.String("key", key), slog.String("error", _err.Error()))
 			return data, nil
 		}
 		if _err = cli.Set(ctx, key, string(b), ttl).Err(); _err != nil {
-			slog.ErrorContext(ctx, "[caches:Get] set data failed", slog.String("key", key), slog.String("value", string(b)), slog.String("err", _err.Error()))
+			slog.ErrorContext(ctx, "[caches:Get] set data failed", slog.String("key", key), slog.String("value", string(b)), slog.String("error", _err.Error()))
 		}
 		return data, nil
 	})

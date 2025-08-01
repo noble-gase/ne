@@ -43,11 +43,11 @@ func HGet[T any](ctx context.Context, cli redis.UniversalClient, key, field stri
 		// 缓存数据
 		b, _err := json.Marshal(data)
 		if _err != nil {
-			slog.ErrorContext(ctx, "[caches:HGet] marshal data failed", slog.String("key", key), slog.String("field", field), slog.String("err", _err.Error()))
+			slog.ErrorContext(ctx, "[caches:HGet] marshal data failed", slog.String("key", key), slog.String("field", field), slog.String("error", _err.Error()))
 			return data, nil
 		}
 		if _err = cli.HSet(ctx, key, field, string(b)).Err(); _err != nil {
-			slog.ErrorContext(ctx, "[caches:HGet] hset data failed", slog.String("key", key), slog.String("field", field), slog.String("value", string(b)), slog.String("err", _err.Error()))
+			slog.ErrorContext(ctx, "[caches:HGet] hset data failed", slog.String("key", key), slog.String("field", field), slog.String("value", string(b)), slog.String("error", _err.Error()))
 			return data, nil
 		}
 		if ttl > 0 && cli.TTL(ctx, key).Val() == -1 {

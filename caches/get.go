@@ -11,7 +11,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func Get[T any](ctx context.Context, cli redis.UniversalClient, key string, fn func(ctx context.Context) (T, bool, error), ttl time.Duration) (T, error) {
+func Get[T any](ctx context.Context, cli redis.UniversalClient, key string, fn func(ctx context.Context) (T, error), ttl time.Duration) (T, error) {
 	var ret T
 
 	if cli == nil {
@@ -30,13 +30,13 @@ func Get[T any](ctx context.Context, cli redis.UniversalClient, key string, fn f
 	// 缓存未命中
 	data, err, _ := sf.Do(key, func() (any, error) {
 		// 调用fn获取数据
-		data, ok, _err := fn(ctx)
+		data, _err := fn(ctx)
 		if _err != nil {
+			if errors.Is(_err, OmitEmpty) {
+				return data, nil
+			}
 			sf.Forget(key)
 			return nil, _err
-		}
-		if !ok {
-			return data, nil
 		}
 
 		// 缓存数据

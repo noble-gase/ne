@@ -20,10 +20,12 @@ type Span struct {
 // Finish 记录耗时
 func (s *Span) Finish(ctx context.Context) {
 	slog.InfoContext(ctx, "[span] time consume",
-		slog.String("function", s.n),
+		slog.Group("function",
+			slog.String("name", s.n),
+			slog.String("file", s.f),
+			slog.Int("line", s.l),
+		),
 		slog.String("duration", time.Since(s.t).String()),
-		slog.String("file", s.f),
-		slog.Int("line", s.l),
 		slog.Any("tags", s.x),
 	)
 }

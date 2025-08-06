@@ -20,8 +20,10 @@ func HGet[T any](ctx context.Context, cli redis.UniversalClient, key, field stri
 
 	str, err := cli.HGet(ctx, key, field).Result()
 	if err == nil {
-		_err := json.Unmarshal([]byte(str), &ret)
-		return ret, fmt.Errorf("unmarshal: %w", _err)
+		if _err := json.Unmarshal([]byte(str), &ret); _err != nil {
+			return ret, fmt.Errorf("unmarshal(%s): %w", str, _err)
+		}
+		return ret, nil
 	}
 	if !errors.Is(err, redis.Nil) {
 		return ret, err

@@ -1,6 +1,9 @@
 package coord
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 // Point 直角坐标系点
 type Point struct {
@@ -26,11 +29,16 @@ func (p *Point) MLine() int {
 
 // String 实现 Stringer 接口
 func (p *Point) String() string {
-	return fmt.Sprintf("(x: %v, y: %v)", p.x, p.y)
+	return fmt.Sprintf(
+		"(x: %s, y: %s)",
+		strconv.FormatFloat(p.x, 'f', -1, 64),
+		strconv.FormatFloat(p.y, 'f', -1, 64),
+	)
 }
 
-// NewPoint 生成一个直角坐标系的点；
-// 可选参数 `ml` 是用于大地平面直角坐标系间转经纬度的子午线值
+// NewPoint 生成一个直角坐标系的点
+//
+//	可选参数 `ml` 是用于大地平面直角坐标系间转经纬度的子午线值
 func NewPoint(x, y float64, ml ...int) *Point {
 	p := &Point{
 		x: x,

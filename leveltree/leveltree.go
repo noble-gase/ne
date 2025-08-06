@@ -28,8 +28,8 @@ func buildTree[T LevelNode[E], E comparable](classify map[E][]T, rootId E) []*Le
 
 // New 构建菜单和组织单位等分类层级树
 //
-//	data = 一组带有pid的数据
-//	rootId = 树的起始ID
+//	[data] 一组带有pid的数据
+//	[rootId] 树的起始ID
 func New[T LevelNode[E], E comparable](data []T, rootId E) []*LevelTree[T, E] {
 	classify := make(map[E][]T, 0)
 	for _, v := range data {

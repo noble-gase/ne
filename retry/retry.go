@@ -11,7 +11,7 @@ func Retry(ctx context.Context, fn func(ctx context.Context) error, attempts int
 	for i := range attempts {
 		err = fn(ctx)
 		if err == nil || i >= threshold {
-			return
+			break
 		}
 		time.Sleep(sleep)
 	}

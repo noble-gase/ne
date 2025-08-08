@@ -59,6 +59,7 @@ func (l *redLock) Lock(ctx context.Context) error {
 }
 
 func (l *redLock) TryLock(ctx context.Context, attempts int, duration time.Duration) error {
+	threshold := attempts - 1
 	for i := range attempts {
 		select {
 		case <-ctx.Done(): // timeout or canceled
@@ -73,7 +74,7 @@ func (l *redLock) TryLock(ctx context.Context, attempts int, duration time.Durat
 		if len(l.token) != 0 {
 			return nil
 		}
-		if i < attempts-1 {
+		if i < threshold {
 			time.Sleep(duration)
 		}
 	}

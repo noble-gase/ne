@@ -34,10 +34,10 @@ func Close() {
 		return closers[i].priority < closers[j].priority
 	})
 
-	for _, closer := range closers {
-		fmt.Println("close", closer.name, "...")
-		if err := closer.fn(); err != nil {
-			slog.Error("close "+closer.name+" failed", "error", err)
+	for _, v := range closers {
+		fmt.Println("close", v.name, "...")
+		if err := v.fn(); err != nil {
+			slog.Error("close "+v.name+" failed", "error", err)
 		}
 	}
 }

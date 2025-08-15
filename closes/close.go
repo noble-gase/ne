@@ -39,7 +39,7 @@ func Close() {
 	})
 
 	for _, v := range closers {
-		fmt.Println("close", v.id, "...")
+		fmt.Println("⌛️", "close", v.id, "...")
 		if err := v.fn(); err != nil {
 			slog.Error("close "+v.id+" failed", "error", err)
 		}

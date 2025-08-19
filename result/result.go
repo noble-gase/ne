@@ -14,7 +14,7 @@ const MaxBufferCap = 32 << 10 // 32KB
 
 var bufPool = sync.Pool{
 	New: func() any {
-		return bytes.NewBuffer(make([]byte, 0, 4<<10)) // 10KB
+		return bytes.NewBuffer(make([]byte, 0, 4<<10)) // 4KB
 	},
 }
 

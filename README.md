@@ -29,6 +29,6 @@ go get -u github.com/noble-gase/ne
 | leveltree | 基于泛型的菜单和组织单位等分类层级树            |
 | retry     | 重试封装                                        |
 | steps     | 分批次处理切片                                  |
-| helper    | IP、file、time、string、version-compare 等      |
+| helper    | IP、file、io、string、version-compare 等        |
 
 **Enjoy 😊**

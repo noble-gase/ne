@@ -5,7 +5,7 @@ import "time"
 // GMT8 东八区时区
 var GMT8 = time.FixedZone("CST", 8*3600)
 
-// WeekAround 返回给定时间戳所在周的「周一」和「周日」时间字符串
+// WeekAround 返回给定时间戳所在周的「周一」和「周日」日期字符串
 func WeekAround(now time.Time, layout string) (monday, sunday string) {
 	weekday := now.Weekday()
 

@@ -10,7 +10,7 @@ import (
 	"github.com/noble-gase/ne/codes"
 )
 
-const MaxBufferCap = 32 << 10 // 32KB
+const MaxBufSize = 32 << 10 // 32KB
 
 var bufPool = sync.Pool{
 	New: func() any {
@@ -34,7 +34,7 @@ func (ret *result) JSON(w http.ResponseWriter, r *http.Request) {
 	buf := bufPool.Get().(*bytes.Buffer)
 	buf.Reset()
 	defer func() {
-		if buf.Cap() > MaxBufferCap {
+		if buf.Cap() > MaxBufSize {
 			return
 		}
 		buf.Reset()

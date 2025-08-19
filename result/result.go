@@ -10,11 +10,11 @@ import (
 	"github.com/noble-gase/ne/codes"
 )
 
-const MaxBufferCap = 64 << 10 // 64KB
+const MaxBufferCap = 32 << 10 // 32KB
 
 var bufPool = sync.Pool{
 	New: func() any {
-		return bytes.NewBuffer(make([]byte, 0, 10<<10)) // 10KB
+		return bytes.NewBuffer(make([]byte, 0, 4<<10)) // 10KB
 	},
 }
 

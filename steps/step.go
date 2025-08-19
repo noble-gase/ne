@@ -14,14 +14,14 @@ type Step struct {
 //		cur := arr[step.Head:step.Tail]
 //		// todo: do something
 //	}
-func New(len, step int) (steps []Step) {
+func New(len, step int) []Step {
 	mod := len % step
 	cap := len / step
 	if mod != 0 {
 		cap += 1
 	}
 	end := len - mod
-	steps = make([]Step, 0, cap)
+	steps := make([]Step, 0, cap)
 	for i := 0; i < end; i += step {
 		steps = append(steps, Step{
 			Head: i,

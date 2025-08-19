@@ -1,12 +1,22 @@
 package result
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"net/http"
+	"sync"
 
 	"github.com/noble-gase/ne/codes"
 )
+
+const MaxBufferCap = 64 << 10 // 64KB
+
+var bufPool = sync.Pool{
+	New: func() any {
+		return bytes.NewBuffer(make([]byte, 0, 10<<10)) // 10KB
+	},
+}
 
 // Result the result definition for API
 type Result interface {
@@ -21,11 +31,26 @@ type result struct {
 }
 
 func (ret *result) JSON(w http.ResponseWriter, r *http.Request) {
+	buf := bufPool.Get().(*bytes.Buffer)
+	buf.Reset()
+	defer func() {
+		if buf.Cap() > MaxBufferCap {
+			return
+		}
+		buf.Reset()
+		bufPool.Put(buf)
+	}()
+
+	enc := json.NewEncoder(buf)
+	enc.SetEscapeHTML(false)
+	if err := enc.Encode(ret); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(ret); err != nil {
-		w.Write([]byte(err.Error()))
-	}
+	w.Write(buf.Bytes())
 }
 
 func New(code codes.Code, data ...any) Result {

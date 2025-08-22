@@ -21,7 +21,6 @@ go get -u github.com/noble-gase/ne
 | crypts    | 封装便于使用(支持aes&rsa)                       |
 | mutex     | 基于 Redis 的分布式锁                           |
 | validator | 支持汉化和自定义规则                            |
-| linklist  | 一个并发安全的双向列表                          |
 | values    | 用于处理 `k-v` 格式化的场景，如：生成签名串等   |
 | coord     | 距离、方位角、经纬度与平面直角坐标系的相互转化  |
 | images    | 图片处理，如：缩略图、裁切、标注等              |

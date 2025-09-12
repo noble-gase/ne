@@ -81,7 +81,7 @@ func NewReader(ctx context.Context, url string, opts ...Option) (*Reader, error)
 		})
 	}
 
-	// Step 1: 获取远程文件大小（通过 HEAD 请求或 Range 请求）
+	// Step 1: 获取远程文件大小（通过 HEAD 请求）
 	if err := r.contentLength(); err != nil {
 		return nil, err
 	}

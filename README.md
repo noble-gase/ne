@@ -29,5 +29,6 @@ go get -u github.com/noble-gase/ne
 | retry     | 重试封装                                        |
 | steps     | 分批次处理切片                                  |
 | helper    | IP、file、io、string、version-compare 等        |
+| httpzip   | 远程获取ZIP中的文件                             |
 
 **Enjoy 😊**

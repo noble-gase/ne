@@ -2,15 +2,10 @@ package httpzip
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/binary"
 	"fmt"
-	"net"
 	"net/http"
 	"strings"
-	"time"
-
-	"github.com/go-resty/resty/v2"
 )
 
 // Reader 远程 ZIP Reader
@@ -20,8 +15,7 @@ type Reader struct {
 	Size int64
 	File []*File
 
-	ctx    context.Context
-	client *resty.Client
+	ctx context.Context
 }
 
 // OpenReader 打开远程 ZIP 并解析目录
@@ -51,34 +45,10 @@ type Reader struct {
 //		8   bytes   Total number of entries in the central directory
 //		8   bytes   Size of the central directory
 //		8   bytes   Offset of start of central directory
-func NewReader(ctx context.Context, url string, opts ...Option) (*Reader, error) {
+func NewReader(ctx context.Context, url string) (*Reader, error) {
 	r := &Reader{
 		url: url,
 		ctx: ctx,
-	}
-
-	for _, f := range opts {
-		f(r)
-	}
-	if r.client == nil {
-		r.client = resty.NewWithClient(&http.Client{
-			Transport: &http.Transport{
-				Proxy: http.ProxyFromEnvironment,
-				DialContext: (&net.Dialer{
-					Timeout:   30 * time.Second,
-					KeepAlive: 60 * time.Second,
-				}).DialContext,
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: true,
-				},
-				MaxIdleConns:          0,
-				MaxIdleConnsPerHost:   1000,
-				MaxConnsPerHost:       1000,
-				IdleConnTimeout:       60 * time.Second,
-				TLSHandshakeTimeout:   10 * time.Second,
-				ExpectContinueTimeout: time.Second,
-			},
-		})
 	}
 
 	// Step 1: 获取远程文件大小（通过 HEAD 请求）
@@ -148,7 +118,7 @@ func NewReader(ctx context.Context, url string, opts ...Option) (*Reader, error)
 }
 
 func (r *Reader) contentLength() error {
-	resp, err := r.client.R().SetContext(r.ctx).Head(r.url)
+	resp, err := Client().R().SetContext(r.ctx).Head(r.url)
 	if err != nil {
 		return err
 	}
@@ -162,7 +132,7 @@ func (r *Reader) contentLength() error {
 }
 
 func (r *Reader) httpRange(start, end int64) ([]byte, error) {
-	resp, err := r.client.R().
+	resp, err := Client().R().
 		SetContext(r.ctx).
 		SetHeader("Range", fmt.Sprintf("bytes=%d-%d", start, end)).
 		Get(r.url)
@@ -173,7 +143,7 @@ func (r *Reader) httpRange(start, end int64) ([]byte, error) {
 }
 
 func (r *Reader) httpRangeRaw(start, end int64) (*http.Response, error) {
-	resp, err := r.client.R().
+	resp, err := Client().R().
 		SetContext(r.ctx).
 		SetHeader("Range", fmt.Sprintf("bytes=%d-%d", start, end)).
 		SetDoNotParseResponse(true).

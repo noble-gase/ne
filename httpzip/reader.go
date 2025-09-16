@@ -99,7 +99,7 @@ func NewReader(ctx context.Context, url string) (*Reader, error) {
 			return nil, fmt.Errorf("invalid ZIP64 EOCD signature")
 		}
 
-		// 从 ZIP64 EOCD 中解析 cdSize / cdOffset
+		// 从 ZIP64 EOCD 中解析 cdSize 和 cdOffset
 		cdSize = binary.LittleEndian.Uint64(zip64EOCD[40:])
 		cdOffset = binary.LittleEndian.Uint64(zip64EOCD[48:])
 	}

@@ -20,31 +20,31 @@ type Reader struct {
 
 // OpenReader 打开远程 ZIP 并解析目录
 //
-//	 EOCD(End of Central Directory)
+//	EOCD(End of Central Directory)
 //
-//		标准ZIP
-//		---------------------------------------------------------
-//		 4   bytes   End of central dir signature (0x06054b50)
-//		 2   bytes   Number of this disk
-//		 2   bytes   Number of the disk with the start of the central directory
-//		 2   bytes   Total number of entries in the central directory on this disk
-//		 2   bytes   Total number of entries in the central directory
-//		 4   bytes   Size of the central directory
-//		 4   bytes   Offset of start of central directory with respect to the starting disk number
-//		 2   bytes   ZIP file comment length
+//	标准ZIP
+//	---------------------------------------------------------
+//	4   bytes   End of central dir signature (0x06054b50)
+//	2   bytes   Number of this disk
+//	2   bytes   Number of the disk with the start of the central directory
+//	2   bytes   Total number of entries in the central directory on this disk
+//	2   bytes   Total number of entries in the central directory
+//	4   bytes   Size of the central directory
+//	4   bytes   Offset of start of central directory with respect to the starting disk number
+//	2   bytes   ZIP file comment length
 //
-//		ZIP64
-//		---------------------------------------------------------
-//		4   bytes   Signature 0x06064b50
-//		8   bytes   Size of zip64 end of central directory record
-//		2   bytes   Version made by
-//		2   bytes   Version needed to extract
-//		4   bytes   Number of this disk
-//		4   bytes   Number of the disk with the start of the central directory
-//		8   bytes   Total number of entries in the central directory on this disk
-//		8   bytes   Total number of entries in the central directory
-//		8   bytes   Size of the central directory
-//		8   bytes   Offset of start of central directory
+//	ZIP64
+//	---------------------------------------------------------
+//	4   bytes   Signature 0x06064b50
+//	8   bytes   Size of zip64 end of central directory record
+//	2   bytes   Version made by
+//	2   bytes   Version needed to extract
+//	4   bytes   Number of this disk
+//	4   bytes   Number of the disk with the start of the central directory
+//	8   bytes   Total number of entries in the central directory on this disk
+//	8   bytes   Total number of entries in the central directory
+//	8   bytes   Size of the central directory
+//	8   bytes   Offset of start of central directory
 func NewReader(ctx context.Context, url string) (*Reader, error) {
 	r := &Reader{
 		url: url,

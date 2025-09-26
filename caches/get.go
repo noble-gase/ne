@@ -11,14 +11,14 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func Get[T any](ctx context.Context, cli redis.UniversalClient, key string, fn func(ctx context.Context) (T, error), ttl time.Duration) (T, error) {
+func Get[T any](ctx context.Context, uc redis.UniversalClient, key string, fn func(ctx context.Context) (T, error), ttl time.Duration) (T, error) {
 	var ret T
 
-	if cli == nil {
+	if uc == nil {
 		return ret, ErrClientNil
 	}
 
-	str, err := cli.Get(ctx, key).Result()
+	str, err := uc.Get(ctx, key).Result()
 	if err == nil {
 		if _err := json.Unmarshal([]byte(str), &ret); _err != nil {
 			return ret, fmt.Errorf("unmarshal(%s): %w", str, _err)
@@ -47,7 +47,7 @@ func Get[T any](ctx context.Context, cli redis.UniversalClient, key string, fn f
 			slog.ErrorContext(ctx, "[caches:Get] marshal data failed", slog.String("key", key), slog.String("error", _err.Error()))
 			return data, nil
 		}
-		if _err = cli.Set(ctx, key, string(b), ttl).Err(); _err != nil {
+		if _err = uc.Set(ctx, key, string(b), ttl).Err(); _err != nil {
 			slog.ErrorContext(ctx, "[caches:Get] set data failed", slog.String("key", key), slog.String("value", string(b)), slog.String("error", _err.Error()))
 		}
 		return data, nil

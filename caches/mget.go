@@ -7,8 +7,12 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func MGetMap(ctx context.Context, cli redis.UniversalClient, keys []string, omitempty bool) (map[string]string, error) {
-	values, err := cli.MGet(ctx, keys...).Result()
+func MGetMap(ctx context.Context, uc redis.UniversalClient, keys []string, omitempty bool) (map[string]string, error) {
+	if uc == nil {
+		return nil, ErrClientNil
+	}
+
+	values, err := uc.MGet(ctx, keys...).Result()
 	if err != nil {
 		return nil, err
 	}

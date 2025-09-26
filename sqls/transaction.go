@@ -8,8 +8,6 @@ import (
 	"runtime/debug"
 )
 
-var ErrDbNil = errors.New("db is nil (forgotten initialize?)")
-
 type (
 	DB = map[string]*sql.DB
 	TX = map[string]*sql.Tx
@@ -18,7 +16,7 @@ type (
 // Transaction 执行数据库事务
 func Transaction(ctx context.Context, db *sql.DB, fn func(ctx context.Context, tx *sql.Tx) error, opts ...*sql.TxOptions) (err error) {
 	if db == nil {
-		err = ErrDbNil
+		err = errors.New("db is nil (forgotten initialize?)")
 		return
 	}
 

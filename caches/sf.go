@@ -16,20 +16,20 @@ const OmitEmpty = helper.NilError("caches: omitempty")
 
 var ErrClientNil = errors.New("redis client is nil (forgotten initialize?)")
 
-func Del(ctx context.Context, cli redis.UniversalClient, key string) error {
-	if cli == nil {
+func Del(ctx context.Context, uc redis.UniversalClient, key string) error {
+	if uc == nil {
 		return ErrClientNil
 	}
 
 	sf.Forget(key)
-	return cli.Del(ctx, key).Err()
+	return uc.Del(ctx, key).Err()
 }
 
-func HDel(ctx context.Context, cli redis.UniversalClient, key, field string) error {
-	if cli == nil {
+func HDel(ctx context.Context, uc redis.UniversalClient, key, field string) error {
+	if uc == nil {
 		return ErrClientNil
 	}
 
 	sf.Forget(key + ":" + field)
-	return cli.HDel(ctx, key, field).Err()
+	return uc.HDel(ctx, key, field).Err()
 }

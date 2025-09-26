@@ -11,14 +11,14 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func HGet[T any](ctx context.Context, cli redis.UniversalClient, key, field string, fn func(ctx context.Context) (T, error), ttl time.Duration) (T, error) {
+func HGet[T any](ctx context.Context, uc redis.UniversalClient, key, field string, fn func(ctx context.Context) (T, error), ttl time.Duration) (T, error) {
 	var ret T
 
-	if cli == nil {
+	if uc == nil {
 		return ret, ErrClientNil
 	}
 
-	str, err := cli.HGet(ctx, key, field).Result()
+	str, err := uc.HGet(ctx, key, field).Result()
 	if err == nil {
 		if _err := json.Unmarshal([]byte(str), &ret); _err != nil {
 			return ret, fmt.Errorf("unmarshal(%s): %w", str, _err)
@@ -48,12 +48,12 @@ func HGet[T any](ctx context.Context, cli redis.UniversalClient, key, field stri
 			slog.ErrorContext(ctx, "[caches:HGet] marshal data failed", slog.String("key", key), slog.String("field", field), slog.String("error", _err.Error()))
 			return data, nil
 		}
-		if _err = cli.HSet(ctx, key, field, string(b)).Err(); _err != nil {
+		if _err = uc.HSet(ctx, key, field, string(b)).Err(); _err != nil {
 			slog.ErrorContext(ctx, "[caches:HGet] hset data failed", slog.String("key", key), slog.String("field", field), slog.String("value", string(b)), slog.String("error", _err.Error()))
 			return data, nil
 		}
-		if ttl > 0 && cli.TTL(ctx, key).Val() == -1 {
-			cli.Expire(ctx, key, ttl)
+		if ttl > 0 && uc.TTL(ctx, key).Val() == -1 {
+			uc.Expire(ctx, key, ttl)
 		}
 		return data, nil
 	})

@@ -11,6 +11,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+const MaxFormMemory = 32 << 20
+
 // BindJSON 解析JSON请求体并校验
 func BindJSON(r *http.Request, obj any) error {
 	if r.Body != nil && r.Body != http.NoBody {

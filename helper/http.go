@@ -9,8 +9,6 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-const MaxFormMemory = 32 << 20
-
 const (
 	HeaderAccept        = "Accept"
 	HeaderAuthorization = "Authorization"

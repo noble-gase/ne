@@ -26,39 +26,6 @@ type ParamsValidate struct {
 	Desc sql.NullString `valid:"nullstring_required"`
 }
 
-func TestDefaultValidator(t *testing.T) {
-	params1 := new(ParamsValidate)
-	params1.ID = sql.NullInt64{
-		Int64: 9,
-		Valid: true,
-	}
-
-	opts := []Option{
-		WithValuerType(sql.NullString{}, sql.NullInt64{}),
-		WithValidateFunc("nullint_gte", NullIntGte),
-		WithTranslation("nullint_gte", "{0}必须大于或等于{1}", true),
-		WithValidateFunc("nullstring_required", NullStringRequired),
-		WithTranslation("nullstring_required", "{0}为必填字段", true),
-	}
-
-	err := ValidateStruct(params1, opts...)
-	assert.NotNil(t, err)
-	t.Log("err validate params:", err.Error())
-
-	params2 := &ParamsValidate{
-		ID: sql.NullInt64{
-			Int64: 13,
-			Valid: true,
-		},
-		Desc: sql.NullString{
-			String: "og",
-			Valid:  true,
-		},
-	}
-	err = ValidateStruct(params2, opts...)
-	assert.Nil(t, err)
-}
-
 func TestNewValidator(t *testing.T) {
 	testV := New(
 		WithValuerType(sql.NullString{}, sql.NullInt64{}),

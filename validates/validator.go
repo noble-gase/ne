@@ -72,6 +72,8 @@ func (v *Validator) Engine() any {
 
 // New 生成一个验证器实例
 //
+//	tag: valid
+//
 //	在Gin中使用：
 //	binding.Validator = validates.New()
 func New(opts ...Option) *Validator {
@@ -99,20 +101,20 @@ var (
 )
 
 // ValidateStruct 验证结构体
-func ValidateStruct(obj any, opts ...Option) error {
+func ValidateStruct(obj any) error {
 	if v == nil {
 		once.Do(func() {
-			v = New(opts...)
+			v = New()
 		})
 	}
 	return v.ValidateStruct(obj)
 }
 
 // ValidateStructCtx 验证结构体，带Context
-func ValidateStructCtx(ctx context.Context, obj any, opts ...Option) error {
+func ValidateStructCtx(ctx context.Context, obj any) error {
 	if v == nil {
 		once.Do(func() {
-			v = New(opts...)
+			v = New()
 		})
 	}
 	return v.ValidateStructCtx(ctx, obj)

@@ -19,7 +19,11 @@ func TestIs(t *testing.T) {
 	assert.False(t, Is(New(1, "failed"), OK))
 }
 
-func TestNew(t *testing.T) {
-	t.Log(OK.Wrap("success"))
-	t.Log(Unknown.Wrap("user(id=%d) not found", 1))
+func TestWrap(t *testing.T) {
+	assert.ErrorIs(t, OK.Wrap("success"), New(0, "success"))
+	assert.ErrorIs(t, Err.Wrap("user(id=%d) not found", 1), New(-1, "user(id=1) not found"))
+}
+
+func TestFromError(t *testing.T) {
+	assert.ErrorIs(t, FromError(errors.New("something wrong")), New(-1, "something wrong"))
 }

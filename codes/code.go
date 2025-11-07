@@ -12,7 +12,7 @@ type Code interface {
 	Val() int
 	// M returns the code message
 	Msg() string
-	// Wrap returns a newly allocated code with the same value.
+	// Wrap returns a newly allocated code with the same value
 	Wrap(format string, args ...any) Code
 }
 
@@ -22,7 +22,7 @@ type code struct {
 }
 
 func (c code) Error() string {
-	return fmt.Sprintf("%d | %s", c.v, c.m)
+	return fmt.Sprintf("[%d] %s", c.v, c.m)
 }
 
 func (c code) Val() int {
@@ -45,8 +45,8 @@ func New(val int, msg string) Code {
 }
 
 var (
-	OK      = New(0, "OK")
-	Unknown = New(-1, "System Exception")
+	OK  = New(0, "OK")
+	Err = New(-1, "System Exception")
 )
 
 // Is reports whether the err is the target code
@@ -54,6 +54,7 @@ func Is(err error, target Code) bool {
 	if err == nil || target == nil {
 		return err == target
 	}
+
 	var c code
 	if errors.As(err, &c) {
 		return c.Val() == target.Val()
@@ -66,9 +67,10 @@ func FromError(err error) Code {
 	if err == nil {
 		return OK
 	}
+
 	var c code
 	if errors.As(err, &c) {
 		return c
 	}
-	return Unknown.Wrap(err.Error())
+	return Err.Wrap(err.Error())
 }

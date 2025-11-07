@@ -73,5 +73,5 @@ func Err(err error, data ...any) Result {
 	if errors.As(err, &code) {
 		return New(code, data...)
 	}
-	return New(codes.Unknown, data...)
+	return New(codes.Err, data...)
 }

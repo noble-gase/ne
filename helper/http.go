@@ -9,6 +9,8 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
+const XTraceId = "x-trace-id"
+
 const (
 	HeaderAccept        = "Accept"
 	HeaderAuthorization = "Authorization"

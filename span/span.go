@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"runtime"
-	"strings"
 	"time"
 )
 
@@ -19,9 +18,9 @@ type Span struct {
 
 // Finish 记录耗时
 func (s *Span) Finish(ctx context.Context) {
-	slog.InfoContext(ctx, "[span] time consume",
-		slog.Group("function",
-			slog.String("name", s.n),
+	slog.LogAttrs(ctx, slog.LevelInfo, "[span] time consume",
+		slog.Group("caller",
+			slog.String("func", s.n),
 			slog.String("file", s.f),
 			slog.Int("line", s.l),
 		),
@@ -46,8 +45,7 @@ func New(tags ...string) *Span {
 	sp.f, sp.l = file, line
 	// Get the function details
 	if fn := runtime.FuncForPC(pc); fn != nil {
-		name := fn.Name()
-		sp.n = name[strings.Index(name, ".")+1:]
+		sp.n = fn.Name()
 	}
 	return sp
 }

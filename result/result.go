@@ -58,7 +58,7 @@ func New(code codes.Code, data ...any) Result {
 		Code: code.Val(),
 		Msg:  code.Msg(),
 	}
-	if len(data) != 0 && data[0] != nil {
+	if len(data) != 0 {
 		ret.Data = data[0]
 	}
 	return ret
@@ -68,10 +68,10 @@ func OK(data ...any) Result {
 	return New(codes.OK, data...)
 }
 
-func Err(err error, data ...any) Result {
+func Err(err error) Result {
 	var code codes.Code
 	if errors.As(err, &code) {
-		return New(code, data...)
+		return New(code)
 	}
-	return New(codes.Err, data...)
+	return New(codes.Err)
 }

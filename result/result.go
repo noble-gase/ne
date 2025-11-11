@@ -25,9 +25,9 @@ type Result interface {
 }
 
 type result struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-	Data    any    `json:"data,omitempty"`
+	Code int    `json:"code"`
+	Msg  string `json:"msg"`
+	Data any    `json:"data,omitempty"`
 }
 
 func (ret *result) JSON(w http.ResponseWriter, r *http.Request) {
@@ -55,8 +55,8 @@ func (ret *result) JSON(w http.ResponseWriter, r *http.Request) {
 
 func New(code codes.Code, data ...any) Result {
 	ret := &result{
-		Code:    code.Value(),
-		Message: code.Message(),
+		Code: code.Value(),
+		Msg:  code.Message(),
 	}
 	if len(data) != 0 {
 		ret.Data = data[0]

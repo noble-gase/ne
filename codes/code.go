@@ -8,40 +8,43 @@ import (
 // Code the code definition for API
 type Code interface {
 	error
-	// V returns the code value
-	Val() int
-	// M returns the code message
-	Msg() string
-	// Wrap returns a newly allocated code with the same value
-	Wrap(format string, args ...any) Code
+	// Value returns the code value
+	Value() int
+	// Message returns the code message
+	Message() string
+	// WithMsg returns a newly allocated code with the same value
+	WithMsg(msg string) Code
+	// WithMsgF returns a newly allocated code with the same value
+	WithMsgF(format string, args ...any) Code
 }
 
 type code struct {
-	v int
-	m string
+	val int
+	msg string
 }
 
 func (c code) Error() string {
-	return fmt.Sprintf("[%d] %s", c.v, c.m)
+	return fmt.Sprintf("[%d] %s", c.val, c.msg)
 }
 
-func (c code) Val() int {
-	return c.v
+func (c code) Value() int {
+	return c.val
 }
 
-func (c code) Msg() string {
-	return c.m
+func (c code) Message() string {
+	return c.msg
 }
 
-func (c code) Wrap(format string, args ...any) Code {
-	if len(args) == 0 {
-		return code{v: c.v, m: format}
-	}
-	return code{v: c.v, m: fmt.Sprintf(format, args...)}
+func (c code) WithMsg(msg string) Code {
+	return code{val: c.val, msg: msg}
+}
+
+func (c code) WithMsgF(format string, args ...any) Code {
+	return code{val: c.val, msg: fmt.Sprintf(format, args...)}
 }
 
 func New(val int, msg string) Code {
-	return code{v: val, m: msg}
+	return code{val: val, msg: msg}
 }
 
 var (
@@ -57,7 +60,7 @@ func Is(err error, target Code) bool {
 
 	var c code
 	if errors.As(err, &c) {
-		return c.Val() == target.Val()
+		return c.Value() == target.Value()
 	}
 	return false
 }
@@ -72,5 +75,5 @@ func FromError(err error) Code {
 	if errors.As(err, &c) {
 		return c
 	}
-	return Err.Wrap(err.Error())
+	return Err.WithMsg(err.Error())
 }

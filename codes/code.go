@@ -12,9 +12,9 @@ type Code interface {
 	Value() int
 	// Message returns the code message
 	Message() string
-	// WithMsg returns a newly allocated code with the same value
+	// WithMsg returns a new Code with the same value but a different message
 	WithMsg(msg string) Code
-	// WithMsgF returns a newly allocated code with the same value
+	// WithMsgF returns a new Code with the same value and a formatted message
 	WithMsgF(format string, args ...any) Code
 }
 

@@ -14,10 +14,6 @@ import (
 func HGet[T any](ctx context.Context, uc redis.UniversalClient, key, field string, fn func(ctx context.Context) (T, error), ttl time.Duration) (T, error) {
 	var ret T
 
-	if uc == nil {
-		return ret, ErrClientNil
-	}
-
 	str, err := uc.HGet(ctx, key, field).Result()
 	if err == nil {
 		if _err := json.Unmarshal([]byte(str), &ret); _err != nil {

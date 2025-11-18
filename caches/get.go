@@ -14,10 +14,6 @@ import (
 func Get[T any](ctx context.Context, uc redis.UniversalClient, key string, fn func(ctx context.Context) (T, error), ttl time.Duration) (T, error) {
 	var ret T
 
-	if uc == nil {
-		return ret, ErrClientNil
-	}
-
 	str, err := uc.Get(ctx, key).Result()
 	if err == nil {
 		if _err := json.Unmarshal([]byte(str), &ret); _err != nil {

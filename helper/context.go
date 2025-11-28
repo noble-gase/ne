@@ -10,16 +10,20 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-func NewCtxWithKeyValue(ctx context.Context, key string, vals ...string) context.Context {
+// CtxWithMDValue sets key-value pairs to the incoming metadata
+// and returns a new context.
+func CtxWithMDValue(ctx context.Context, key string, vals ...string) context.Context {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		md = metadata.Pairs()
 	}
-	md.Append(key, vals...)
+	md.Set(key, vals...)
 	return metadata.NewIncomingContext(ctx, md)
 }
 
-func NewCtxWithTraceId(ctx context.Context) context.Context {
+// CtxWithTraceId ensures a trace ID exists in the incoming metadata.
+// If absent, a new trace ID is generated and attached.
+func CtxWithTraceId(ctx context.Context) context.Context {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		md = metadata.Pairs()
@@ -34,7 +38,8 @@ func NewCtxWithTraceId(ctx context.Context) context.Context {
 	return metadata.NewIncomingContext(ctx, md)
 }
 
-func GetValuesFromCtx(ctx context.Context, key string) []string {
+// MDValueFromCtx returns value for the given key from incoming metadata.
+func MDValueFromCtx(ctx context.Context, key string) []string {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return nil
@@ -42,46 +47,48 @@ func GetValuesFromCtx(ctx context.Context, key string) []string {
 	return md.Get(key)
 }
 
-func GetTraceIdFromCtx(ctx context.Context) string {
-	vals := GetValuesFromCtx(ctx, XTraceId)
-	if len(vals) == 0 {
+// MDTraceIdFromCtx returns the trace ID from incoming metadata.
+func MDTraceIdFromCtx(ctx context.Context) string {
+	ss := MDValueFromCtx(ctx, XTraceId)
+	if len(ss) == 0 {
 		return ""
 	}
-	return vals[0]
+	return ss[0]
 }
 
-func GetStrValFromCtx(ctx context.Context, key string) string {
-	vals := GetValuesFromCtx(ctx, key)
-	if len(vals) == 0 {
+// MDStrFromCtx returns the string value for the given key from incoming metadata.
+func MDStrFromCtx(ctx context.Context, key string) string {
+	ss := MDValueFromCtx(ctx, key)
+	if len(ss) == 0 {
 		return ""
 	}
-	return vals[0]
+	return ss[0]
 }
 
-func GetBoolValFromCtx(ctx context.Context, key string) bool {
-	s := GetStrValFromCtx(ctx, key)
-
+// MDBoolFromCtx returns the boolean value for the given key from incoming metadata.
+func MDBoolFromCtx(ctx context.Context, key string) bool {
+	s := MDStrFromCtx(ctx, key)
 	v, _ := strconv.ParseBool(s)
 	return v
 }
 
-func GetIntValFromCtx[T constraints.Signed](ctx context.Context, key string) T {
-	s := GetStrValFromCtx(ctx, key)
-
+// MDIntFromCtx returns the signed integer value for the given key from incoming metadata.
+func MDIntFromCtx[T constraints.Signed](ctx context.Context, key string) T {
+	s := MDStrFromCtx(ctx, key)
 	v, _ := strconv.ParseInt(s, 10, 64)
 	return T(v)
 }
 
-func GetUintValFromCtx[T constraints.Unsigned](ctx context.Context, key string) T {
-	s := GetStrValFromCtx(ctx, key)
-
+// MDUintFromCtx returns the unsigned integer value for the given key from incoming metadata.
+func MDUintFromCtx[T constraints.Unsigned](ctx context.Context, key string) T {
+	s := MDStrFromCtx(ctx, key)
 	v, _ := strconv.ParseUint(s, 10, 64)
 	return T(v)
 }
 
-func GetFloatValFromCtx[T constraints.Float](ctx context.Context, key string) T {
-	s := GetStrValFromCtx(ctx, key)
-
+// MDFloatFromCtx returns the float value for the given key from incoming metadata.
+func MDFloatFromCtx[T constraints.Float](ctx context.Context, key string) T {
+	s := MDStrFromCtx(ctx, key)
 	v, _ := strconv.ParseFloat(s, 64)
 	return T(v)
 }

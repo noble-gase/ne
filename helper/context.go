@@ -38,8 +38,8 @@ func CtxWithTraceId(ctx context.Context) context.Context {
 	return metadata.NewIncomingContext(ctx, md)
 }
 
-// MDValueFromCtx returns value for the given key from incoming metadata.
-func MDValueFromCtx(ctx context.Context, key string) []string {
+// MDValFromCtx returns value for the given key from incoming metadata.
+func MDValFromCtx(ctx context.Context, key string) []string {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return nil
@@ -47,18 +47,9 @@ func MDValueFromCtx(ctx context.Context, key string) []string {
 	return md.Get(key)
 }
 
-// MDTraceIdFromCtx returns the trace ID from incoming metadata.
-func MDTraceIdFromCtx(ctx context.Context) string {
-	ss := MDValueFromCtx(ctx, XTraceId)
-	if len(ss) == 0 {
-		return ""
-	}
-	return ss[0]
-}
-
 // MDStrFromCtx returns the string value for the given key from incoming metadata.
 func MDStrFromCtx(ctx context.Context, key string) string {
-	ss := MDValueFromCtx(ctx, key)
+	ss := MDValFromCtx(ctx, key)
 	if len(ss) == 0 {
 		return ""
 	}
@@ -91,4 +82,9 @@ func MDFloatFromCtx[T constraints.Float](ctx context.Context, key string) T {
 	s := MDStrFromCtx(ctx, key)
 	v, _ := strconv.ParseFloat(s, 64)
 	return T(v)
+}
+
+// MDTraceIdFromCtx returns the trace ID from incoming metadata.
+func MDTraceIdFromCtx(ctx context.Context) string {
+	return MDStrFromCtx(ctx, XTraceId)
 }

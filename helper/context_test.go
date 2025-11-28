@@ -33,16 +33,7 @@ func TestCtxWithTraceId(t *testing.T) {
 
 func TestMDValueFromCtx(t *testing.T) {
 	ctx := CtxWithMDValue(context.Background(), "user", "noble-gase")
-	assert.Equal(t, []string{"noble-gase"}, MDValueFromCtx(ctx, "user"))
-}
-
-func TestMDTraceIdFromCtx(t *testing.T) {
-	ctx1 := CtxWithTraceId(context.Background())
-	assert.NotEqual(t, 0, len(MDTraceIdFromCtx(ctx1)))
-
-	ctx := CtxWithMDValue(context.Background(), XTraceId, "noble-gase")
-	ctx2 := CtxWithTraceId(ctx)
-	assert.Equal(t, "noble-gase", MDTraceIdFromCtx(ctx2))
+	assert.Equal(t, []string{"noble-gase"}, MDValFromCtx(ctx, "user"))
 }
 
 func TestMDStrFromCtx(t *testing.T) {
@@ -76,4 +67,13 @@ func TestMDFloatFromCtx(t *testing.T) {
 
 	ctx := CtxWithMDValue(context.Background(), "rate", "3.14")
 	assert.Equal(t, float64(3.14), MDFloatFromCtx[float64](ctx, "rate"))
+}
+
+func TestMDTraceIdFromCtx(t *testing.T) {
+	ctx1 := CtxWithTraceId(context.Background())
+	assert.NotEqual(t, 0, len(MDTraceIdFromCtx(ctx1)))
+
+	ctx := CtxWithMDValue(context.Background(), XTraceId, "noble-gase")
+	ctx2 := CtxWithTraceId(ctx)
+	assert.Equal(t, "noble-gase", MDTraceIdFromCtx(ctx2))
 }

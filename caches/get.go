@@ -30,7 +30,7 @@ func Get[T any](ctx context.Context, uc redis.UniversalClient, key string, fn fu
 		// 调用fn获取数据
 		data, _err := fn(ctx)
 		if _err != nil {
-			if errors.Is(_err, OmitEmpty) {
+			if errors.Is(_err, Discard) {
 				return data, nil
 			}
 			sf.Forget(key)

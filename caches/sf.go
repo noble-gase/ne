@@ -10,8 +10,8 @@ import (
 
 var sf singleflight.Group
 
-// OmitEmpty 不缓存数据
-const OmitEmpty = helper.NilError("caches: omitempty")
+// Discard 丢弃数据，不缓存
+const Discard = helper.NilError("caches: discarded")
 
 func Del(ctx context.Context, uc redis.UniversalClient, key string) error {
 	sf.Forget(key)

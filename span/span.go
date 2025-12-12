@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -45,7 +46,8 @@ func New(tags ...string) *Span {
 	sp.f, sp.l = file, line
 	// Get the function details
 	if fn := runtime.FuncForPC(pc); fn != nil {
-		sp.n = fn.Name()
+		parts := strings.Split(fn.Name(), "/")
+		sp.n = parts[len(parts)-1]
 	}
 	return sp
 }

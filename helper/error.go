@@ -3,9 +3,9 @@ package helper
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"runtime"
+	"strings"
 
 	"github.com/noble-gase/ne/codes"
 )
@@ -24,10 +24,17 @@ func Error(ctx context.Context, err error, attrs ...slog.Attr) error {
 	// Skip level 1 to get the caller function
 	pc, file, line, _ := runtime.Caller(1)
 	// Get the function details
+	var name string
 	if fn := runtime.FuncForPC(pc); fn != nil {
-		attrs = append(attrs, slog.String("caller", fn.Name()))
+		parts := strings.Split(fn.Name(), "/")
+		name = parts[len(parts)-1]
 	}
-	attrs = append(attrs, slog.String("location", fmt.Sprintf("%s:%d", file, line)))
+
+	attrs = append(attrs, slog.Group("caller",
+		slog.String("func", name),
+		slog.String("file", file),
+		slog.Int("line", line),
+	))
 
 	slog.LogAttrs(ctx, slog.LevelError, err.Error(), attrs...)
 

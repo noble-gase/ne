@@ -20,13 +20,16 @@ type Span struct {
 // Finish 记录耗时
 func (s *Span) Finish(ctx context.Context) {
 	slog.LogAttrs(ctx, slog.LevelInfo, "[span] time consume",
-		slog.Group("caller",
-			slog.String("func", s.n),
-			slog.String("file", s.f),
-			slog.Int("line", s.l),
-		),
 		slog.String("duration", time.Since(s.t).String()),
 		slog.Any("tags", s.x),
+		slog.Attr{
+			Key: "caller",
+			Value: slog.GroupValue(
+				slog.String("func", s.n),
+				slog.String("file", s.f),
+				slog.Int("line", s.l),
+			),
+		},
 	)
 }
 

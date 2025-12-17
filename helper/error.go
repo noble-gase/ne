@@ -34,15 +34,19 @@ func Error(ctx context.Context, err error, attrs ...slog.Attr) error {
 		name = parts[len(parts)-1]
 	}
 
-	attrs = append(attrs, slog.Attr{
+	caller := slog.Attr{
 		Key: "caller",
 		Value: slog.GroupValue(
 			slog.String("func", name),
 			slog.String("file", file),
 			slog.Int("line", line),
 		),
-	})
-	slog.LogAttrs(ctx, slog.LevelError, errInfo, attrs...)
+	}
+
+	slog.LogAttrs(ctx, slog.LevelError, errInfo, slog.Attr{
+		Key:   "context",
+		Value: slog.GroupValue(attrs...),
+	}, caller)
 
 	return codes.Err
 }

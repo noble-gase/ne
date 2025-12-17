@@ -7,6 +7,7 @@ import (
 	"strconv"
 )
 
+// AnyToStr returns the string representation of an any value.
 func AnyToStr(val any) string {
 	switch v := val.(type) {
 	case string:

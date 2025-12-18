@@ -18,8 +18,8 @@ type Config struct {
 	Driver string
 	// DSN 数据源名称
 	//
-	//  [-MySQL] username:password@tcp(localhost:3306)/dbname?timeout=10s&charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=True&loc=Local
-	//  [-PgSQL] host=localhost port=5432 user=root password=secret dbname=test search_path=schema connect_timeout=10 sslmode=disable
+	//  [-MySQL] user:pass@tcp(host:3306)/dbname?timeout=10s&charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=True&loc=Local
+	//  [-PgSQL] postgres://user:pass@host:5432/dbname?sslmode=disable
 	//  [SQLite] file::memory:?cache=shared
 	DSN string
 	// MaxOpenConns 设置最大可打开的连接数

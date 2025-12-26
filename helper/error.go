@@ -16,13 +16,13 @@ func (e NilError) Error() string { return string(e) }
 
 // Error logs the error with caller, then returns the codes.Err
 func Error(ctx context.Context, err error, attrs ...slog.Attr) error {
-	errInfo := "<nil>"
-	if err != nil {
-		var code codes.Code
-		if errors.As(err, &code) {
-			return code
-		}
-		errInfo = err.Error()
+	if err == nil {
+		return nil
+	}
+
+	var code codes.Code
+	if errors.As(err, &code) {
+		return code
 	}
 
 	// Skip level 1 to get the caller function
@@ -43,7 +43,7 @@ func Error(ctx context.Context, err error, attrs ...slog.Attr) error {
 		),
 	}
 
-	slog.LogAttrs(ctx, slog.LevelError, errInfo, slog.Attr{
+	slog.LogAttrs(ctx, slog.LevelError, err.Error(), slog.Attr{
 		Key:   "context",
 		Value: slog.GroupValue(attrs...),
 	}, caller)

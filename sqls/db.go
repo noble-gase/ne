@@ -26,10 +26,10 @@ type Config struct {
 	MaxOpenConns int
 	// MaxIdleConns 连接池最大闲置连接数
 	MaxIdleConns int
-	// ConnMaxLifetime 连接的最大生命时长
-	ConnMaxLifetime time.Duration
 	// ConnMaxIdleTime 连接最大闲置时间
 	ConnMaxIdleTime time.Duration
+	// ConnMaxLifetime 连接的最大生命时长
+	ConnMaxLifetime time.Duration
 }
 
 // NewDB returns a new sql.DB
@@ -45,8 +45,8 @@ func NewDB(cfg *Config) (*sql.DB, error) {
 
 	db.SetMaxOpenConns(cfg.MaxOpenConns)
 	db.SetMaxIdleConns(cfg.MaxIdleConns)
-	db.SetConnMaxLifetime(cfg.ConnMaxLifetime)
 	db.SetConnMaxIdleTime(cfg.ConnMaxIdleTime)
+	db.SetConnMaxLifetime(cfg.ConnMaxLifetime)
 
 	return db, nil
 }

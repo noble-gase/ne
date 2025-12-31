@@ -305,7 +305,7 @@ func PinTop[T any](list []T, index int) {
 	}
 }
 
-// PinTopF 置顶集合中的一个元素
+// PinTopFunc 置顶集合中的一个元素
 func PinTopFunc[T any](fn func(v T) bool, list []T) {
 	index := 0
 	for i, v := range list {

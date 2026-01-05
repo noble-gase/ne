@@ -296,17 +296,17 @@ func TestFilterMap(t *testing.T) {
 	assert.Equal(t, []int{4, 8, 12, 16, 20}, ret2)
 }
 
-func TestAssociate(t *testing.T) {
+func TestToMap(t *testing.T) {
 	arr := []Foo[int]{{ID: 1}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 5}}
-	ret := Associate(func(v Foo[int]) (int, int) {
+	ret := ToMap(func(v Foo[int]) (int, int) {
 		return v.ID, v.ID * 2
 	}, arr)
 	assert.Equal(t, map[int]int{1: 2, 2: 4, 3: 6, 4: 8, 5: 10}, ret)
 }
 
-func TestFilterAssociate(t *testing.T) {
+func TestFilterToMap(t *testing.T) {
 	arr := []Foo[int]{{ID: 1}, {ID: 2}, {ID: 3}, {ID: 4}, {ID: 5}}
-	ret := FilterAssociate(func(v Foo[int]) (int, int, bool) {
+	ret := FilterToMap(func(v Foo[int]) (int, int, bool) {
 		return v.ID, v.ID * 2, v.ID%2 == 0
 	}, arr)
 	assert.Equal(t, map[int]int{2: 4, 4: 8}, ret)

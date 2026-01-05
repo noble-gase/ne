@@ -397,8 +397,8 @@ func FilterMap[T any, E any](fn func(v T) (E, bool), list []T) []E {
 	return ret
 }
 
-// Associate 序列化一个集合为Map
-func Associate[T any, K comparable, V any](fn func(v T) (K, V), list []T) map[K]V {
+// ToMap 序列化一个集合为Map
+func ToMap[T any, K comparable, V any](fn func(v T) (K, V), list []T) map[K]V {
 	m := make(map[K]V, len(list))
 	for _, v := range list {
 		k, e := fn(v)
@@ -407,8 +407,8 @@ func Associate[T any, K comparable, V any](fn func(v T) (K, V), list []T) map[K]
 	return m
 }
 
-// FilterAssociate 过滤并序列化一个集合为Map
-func FilterAssociate[T any, K comparable, V any](fn func(v T) (K, V, bool), list []T) map[K]V {
+// FilterToMap 过滤并序列化一个集合为Map
+func FilterToMap[T any, K comparable, V any](fn func(v T) (K, V, bool), list []T) map[K]V {
 	m := make(map[K]V, len(list))
 	for _, v := range list {
 		if k, e, ok := fn(v); ok {

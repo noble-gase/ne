@@ -45,7 +45,7 @@ type redLock struct {
 func (l *redLock) Lock(ctx context.Context) error {
 	select {
 	case <-ctx.Done(): // timeout or canceled
-		return ctx.Err()
+		return context.Cause(ctx)
 	default:
 	}
 
@@ -63,7 +63,7 @@ func (l *redLock) TryLock(ctx context.Context, attempts int, duration time.Durat
 	for i := range attempts {
 		select {
 		case <-ctx.Done(): // timeout or canceled
-			return ctx.Err()
+			return context.Cause(ctx)
 		default:
 		}
 

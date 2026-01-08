@@ -202,9 +202,9 @@ func ValuesToMessage(msg proto.Message, values url.Values) error {
 	return parseValues(msg.ProtoReflect(), valuesToMap(values))
 }
 
-func parseValues(msg protoreflect.Message, query map[string]any) error {
+func parseValues(msg protoreflect.Message, data map[string]any) error {
 	fields := msg.Descriptor().Fields()
-	for key, val := range query {
+	for key, val := range data {
 		fd := fields.ByName(protoreflect.Name(key))
 		if fd == nil {
 			continue

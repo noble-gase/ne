@@ -32,6 +32,6 @@ go get -u github.com/noble-gase/ne
 | sqls      | 包含DB初始化和事务等封装                                     |
 | steps     | 分批次处理切片                                               |
 | helper    | IP、file、io、string、version-compare 等                     |
-| httpzip   | 远程获取ZIP压缩包中的文件内容                                |
+| httpzip   | 远程获取 `ZIP` 压缩包中的文件内容                            |
 
 **Enjoy 😊**

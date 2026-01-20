@@ -6,6 +6,7 @@ require (
 	buf.build/go/protovalidate v1.1.0
 	git.sr.ht/~sbinet/gg v0.7.0
 	github.com/disintegration/imaging v1.6.3-0.20201218193011-d40f48ce0f09
+	github.com/go-jet/jet/v2 v2.14.0
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.30.1
@@ -19,8 +20,8 @@ require (
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/shopspring/decimal v1.4.0
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/crypto v0.46.0
-	golang.org/x/exp v0.0.0-20251219203646-944ab1f22d93
+	golang.org/x/crypto v0.47.0
+	golang.org/x/exp v0.0.0-20260112195511-716be5621a96
 	golang.org/x/sync v0.19.0
 	google.golang.org/grpc v1.78.0
 	google.golang.org/protobuf v1.36.11
@@ -42,14 +43,15 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
+	github.com/lib/pq v1.10.9 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/stoewer/go-strcase v1.3.1 // indirect
-	golang.org/x/image v0.34.0 // indirect
-	golang.org/x/net v0.48.0 // indirect
-	golang.org/x/sys v0.39.0 // indirect
-	golang.org/x/text v0.32.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20251222181119-0a764e51fe1b // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251222181119-0a764e51fe1b // indirect
+	golang.org/x/image v0.35.0 // indirect
+	golang.org/x/net v0.49.0 // indirect
+	golang.org/x/sys v0.40.0 // indirect
+	golang.org/x/text v0.33.0 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260114163908-3f89685c29c3 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260114163908-3f89685c29c3 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

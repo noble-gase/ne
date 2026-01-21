@@ -11,6 +11,31 @@ import (
 // ClientOption option for resty.Client
 type ClientOption func(c *resty.Client)
 
+// WithDebug enables the debug mode on the Resty client. The client logs details
+// of every request and response.
+//
+//	WithDebug(true)
+//
+// Also, it can be enabled at the request level for a particular request; see [WithReqDebug].
+//   - For [Request], it logs information such as HTTP verb, Relative URL path,
+//     Host, Headers, and Body if it has one.
+//   - For [Response], it logs information such as Status, Response Time, Headers,
+//     and Body if it has one.
+func WithDebug(b bool) ClientOption {
+	return func(c *resty.Client) {
+		c.SetDebug(b)
+	}
+}
+
+// WithLogger sets given writer for logging Resty request and response details.
+//
+// Compliant to interface [resty.Logger]
+func WithLogger(l resty.Logger) ClientOption {
+	return func(c *resty.Client) {
+		c.SetLogger(l)
+	}
+}
+
 // WithRetryCount enables retry on Resty client and allows you
 // to set no. of retry count. Resty uses a Backoff mechanism.
 func WithRetryCount(n int) ClientOption {
@@ -95,6 +120,18 @@ func WithReqQuery(v url.Values) RequestOption {
 func WithReqDebug(b bool) RequestOption {
 	return func(req *resty.Request) {
 		req.SetDebug(b)
+	}
+}
+
+// WithReqLogger sets given writer for logging Resty request and response details.
+// By default, requests and responses inherit their logger from the client.
+//
+// Compliant to interface [resty.Logger].
+//
+// It overrides the logger value set at the client instance level.
+func WithReqLogger(l resty.Logger) RequestOption {
+	return func(req *resty.Request) {
+		req.SetLogger(l)
 	}
 }
 

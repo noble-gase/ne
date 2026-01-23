@@ -17,10 +17,9 @@ go get -u github.com/noble-gase/ne
 | 模块      | 说明                                                         |
 | --------- | ------------------------------------------------------------ |
 | array     | 切片常用操作                                                 |
-| caches    | 缓存常用操作                                                 |
 | curd      | 基于 [`Jet`](https://github.com/go-jet/jet) 封装的 curd 操作 |
-| hashes    | 封装便于使用                                                 |
-| crypts    | 封装便于使用（支持 aes & rsa）                               |
+| hush      | 封装 Hash 常用方法                                           |
+| crypts    | 封装 Crypto 常用方法（支持 aes & rsa）                       |
 | mutex     | 基于 Redis 的分布式锁                                        |
 | validates | 验证器支持汉化和自定义规则                                   |
 | values    | 用于处理 `k-v` 格式化的场景，如：生成签名串等                |
@@ -28,6 +27,7 @@ go get -u github.com/noble-gase/ne
 | images    | 图片处理，如：缩略图、裁切、标注等                           |
 | protos    | 实现 `url.Values` 和 `proto.Message` 的相互转换              |
 | leveltree | 基于泛型的菜单和组织单位等分类层级树                         |
+| redix     | 基于 `singleflight` 封装 Redis 常用操作                      |
 | retry     | 重试封装                                                     |
 | sqls      | 包含DB初始化和事务等封装                                     |
 | steps     | 分批次处理切片                                               |

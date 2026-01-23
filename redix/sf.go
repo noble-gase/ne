@@ -1,4 +1,4 @@
-package caches
+package redix
 
 import (
 	"github.com/noble-gase/ne/helper"

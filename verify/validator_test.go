@@ -1,4 +1,4 @@
-package validates
+package verify
 
 import (
 	"database/sql"
@@ -29,10 +29,10 @@ type ParamsValidate struct {
 func TestNewValidator(t *testing.T) {
 	testV := New(
 		WithValuerType(sql.NullString{}, sql.NullInt64{}),
-		WithValidateFunc("nullint_gte", NullIntGte),
-		WithTranslation("nullint_gte", "{0}必须大于或等于{1}", true),
-		WithValidateFunc("nullstring_required", NullStringRequired),
-		WithTranslation("nullstring_required", "{0}为必填字段", true),
+		WithValidFunc("nullint_gte", NullIntGte),
+		WithValidTrans("nullint_gte", "{0}必须大于或等于{1}", true),
+		WithValidFunc("nullstring_required", NullStringRequired),
+		WithValidTrans("nullstring_required", "{0}为必填字段", true),
 	)
 
 	params1 := new(ParamsValidate)

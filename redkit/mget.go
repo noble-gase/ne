@@ -33,7 +33,7 @@ func MGetMap[T any](ctx context.Context, uc redis.UniversalClient, keys []string
 	return ret, nil
 }
 
-func MGetStringMap(ctx context.Context, uc redis.UniversalClient, keys []string) (map[string]string, error) {
+func MGetStrMap(ctx context.Context, uc redis.UniversalClient, keys []string) (map[string]string, error) {
 	values, err := uc.MGet(ctx, keys...).Result()
 	if err != nil {
 		return nil, err

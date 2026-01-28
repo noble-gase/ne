@@ -56,7 +56,7 @@ func TestHMGetStringMap(t *testing.T) {
 	uc.HMSet(ctx, "test", "foo", `{"id":1,"name":"foo"}`, "bar", `{"id":2,"name":"bar"}`, "hello", `{"id":3,"name":"hello"}`)
 	defer uc.Del(ctx, "test")
 
-	ret, err := HMGetStringMap(ctx, uc, "test", []string{"foo", "bar", "hello", "none"})
+	ret, err := HMGetStrMap(ctx, uc, "test", []string{"foo", "bar", "hello", "none"})
 	assert.Nil(t, err)
 	t.Log(ret)
 }

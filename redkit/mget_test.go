@@ -37,7 +37,7 @@ func TestMGetStringMap(t *testing.T) {
 	uc.MSet(ctx, "foo", `{"id":1,"name":"foo"}`, "bar", `{"id":2,"name":"bar"}`, "hello", `{"id":3,"name":"hello"}`)
 	defer uc.Del(ctx, "foo", "bar", "hello")
 
-	ret, err := MGetStringMap(ctx, uc, []string{"foo", "bar", "hello", "none"})
+	ret, err := MGetStrMap(ctx, uc, []string{"foo", "bar", "hello", "none"})
 	assert.Nil(t, err)
 	t.Log(ret)
 }

@@ -50,7 +50,7 @@ func HMGetMap[T any](ctx context.Context, uc redis.UniversalClient, key string, 
 	return ret, nil
 }
 
-func HMGetStringMap(ctx context.Context, uc redis.UniversalClient, key string, fields []string) (map[string]string, error) {
+func HMGetStrMap(ctx context.Context, uc redis.UniversalClient, key string, fields []string) (map[string]string, error) {
 	values, err := uc.HMGet(ctx, key, fields...).Result()
 	if err != nil {
 		return nil, err

@@ -26,7 +26,7 @@ go get -u github.com/noble-gase/ne
 | leveltree | 基于泛型的菜单和组织单位等分类层级树                                                         |
 | mutex     | 基于 Redis 的分布式锁                                                                        |
 | protos    | 实现 `url.Values` 和 `proto.Message` 的相互转换                                              |
-| redix     | 基于 `singleflight` 封装 Redis 常用操作                                                      |
+| redkit    | 基于 `singleflight` 封装 Redis 常用操作                                                      |
 | retry     | 重试操作                                                                                     |
 | sqls      | 包含DB初始化和事务等封装                                                                     |
 | steps     | 分批次处理切片                                                                               |

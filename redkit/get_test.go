@@ -1,4 +1,4 @@
-package redix
+package redkit
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestHGet(t *testing.T) {
+func TestGet(t *testing.T) {
 	ctx := context.Background()
 
 	uc := redis.NewUniversalClient(&redis.UniversalOptions{
@@ -22,14 +22,14 @@ func TestHGet(t *testing.T) {
 		ID   int    `json:"id"`
 		Name string `json:"name"`
 	}
-	ret, err := HGet(ctx, uc, "hello", "foo", func(ctx context.Context) (*Demo, error) {
+	ret, err := Get(ctx, uc, "hello", func(ctx context.Context) (*Demo, error) {
 		t.Log(">> callback ")
 		return &Demo{
 			ID:   1,
 			Name: "hello",
 		}, nil
-	}, time.Minute)
+	}, 5*time.Minute)
 	assert.Nil(t, err)
 	t.Logf("%+v", ret)
-	t.Log(uc.HGet(ctx, "hello", "foo").String())
+	t.Log(uc.Get(ctx, "hello").String())
 }

@@ -1,4 +1,4 @@
-package redix
+package redkit
 
 import (
 	"context"

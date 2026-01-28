@@ -1,4 +1,4 @@
-package redix
+package redkit
 
 import (
 	"github.com/noble-gase/ne/helper"

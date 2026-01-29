@@ -285,10 +285,17 @@ func LoadCertFromPfxFile(pfxFile, password string) (tls.Certificate, error) {
 		return fail(err)
 	}
 
-	pemData := make([]byte, 0)
+	var certPEM, keyPEM []byte
 	for _, b := range blocks {
-		pemData = append(pemData, pem.EncodeToMemory(b)...)
+		switch b.Type {
+		case "CERTIFICATE":
+			certPEM = append(certPEM, pem.EncodeToMemory(b)...)
+		case "PRIVATE KEY", "RSA PRIVATE KEY", "EC PRIVATE KEY":
+			keyPEM = pem.EncodeToMemory(b)
+		}
 	}
-
-	return tls.X509KeyPair(pemData, pemData)
+	if len(certPEM) == 0 || len(keyPEM) == 0 {
+		return fail(errors.New("pfx missing cert or key"))
+	}
+	return tls.X509KeyPair(certPEM, keyPEM)
 }

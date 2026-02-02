@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/noble-gase/ne/codes"
+	"github.com/noble-gase/ne/codekit"
 )
 
 type NilError string
@@ -20,7 +20,7 @@ func Error(ctx context.Context, err error, attrs ...slog.Attr) error {
 		return nil
 	}
 
-	var code codes.Code
+	var code codekit.Code
 	if errors.As(err, &code) {
 		return code
 	}
@@ -48,5 +48,5 @@ func Error(ctx context.Context, err error, attrs ...slog.Attr) error {
 		Value: slog.GroupValue(attrs...),
 	}, caller)
 
-	return codes.Err
+	return codekit.Err
 }

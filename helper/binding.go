@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/noble-gase/ne/protos"
-	"github.com/noble-gase/ne/verify"
+	"github.com/noble-gase/ne/pbkit"
+	"github.com/noble-gase/ne/validkit"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -21,17 +21,17 @@ func BindJSON(r *http.Request, obj any) error {
 			return err
 		}
 	}
-	return verify.ValidateStruct(obj)
+	return validkit.ValidateStruct(obj)
 }
 
 // BindProto 解析Proto请求体并校验
 func BindProto(r *http.Request, msg proto.Message) error {
 	// GET请求
 	if r.Method == http.MethodGet {
-		if err := protos.ValuesToMessage(msg, r.URL.Query()); err != nil {
+		if err := pbkit.ValuesToMessage(msg, r.URL.Query()); err != nil {
 			return err
 		}
-		return protos.Validate(msg)
+		return pbkit.Validate(msg)
 	}
 
 	// 根据Content-Type解析请求体
@@ -40,7 +40,7 @@ func BindProto(r *http.Request, msg proto.Message) error {
 		if err := r.ParseForm(); err != nil {
 			return err
 		}
-		if err := protos.ValuesToMessage(msg, r.PostForm); err != nil {
+		if err := pbkit.ValuesToMessage(msg, r.PostForm); err != nil {
 			return err
 		}
 	case ContentMultipartForm:
@@ -49,7 +49,7 @@ func BindProto(r *http.Request, msg proto.Message) error {
 				return err
 			}
 		}
-		if err := protos.ValuesToMessage(msg, r.PostForm); err != nil {
+		if err := pbkit.ValuesToMessage(msg, r.PostForm); err != nil {
 			return err
 		}
 	case ContentJSON:
@@ -62,5 +62,5 @@ func BindProto(r *http.Request, msg proto.Message) error {
 	default:
 		return errors.New("unsupported Content-Type")
 	}
-	return protos.Validate(msg)
+	return pbkit.Validate(msg)
 }

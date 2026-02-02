@@ -1,0 +1,55 @@
+package cryptokit
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestFormatPKCS1Raw(t *testing.T) {
+	data := "ILoveNobleGase"
+
+	privateRaw := "MIIEowIBAAKCAQEAjspx9OpDtF9/gg6FZhfomgdBF6D6FKes6xxg3IR5VoWHT+qwQ3HyeKyNUiaTDJHLfL6YLxoGMe7TzvPNqrfJBrwZvzw0FAwr8Glypd9oUBmvAAj3K0xLdr4voN1JTDXhVJMhKc2B1keWE/XoXr0js2PAcNYoYnnGmzH22oOr4fAI7CNd/9rp8U2aqkBZXdhWQiPh88440uPEIMLxjOLVvZrT4HtuJxd24Vsknhawfs1mweBNDbrogyPgBnPh/vYnNKde8dCF3CvE0PhNDyJwiL0alTNLwW78XOsQ4IBqlFxW/00Vo5pXEdoGKjoajyF16NvMm8PS3C8k/lKCGVUxnQIDAQABAoIBAFjW/hW6V0t3CzcY38iIYZDLqKUR4+ZL+JsDOgSZa4D4bRq80tPzpj+MZBTTqTPt1eQUFU1g7K/OfvvI1pI77JgDGiXQSDqc5A2dHdaz7AvCHw5vhZDr1BvZ8nosk7kV4M8lB0Ih+YEfYvGiUuP226p2CrpplBDI4VeXu5VyzNMx/fo/+7GQtMbSyHYIlhZuOK3wg/tOVXpAn5pOiSShTrsKzOSEwsHngwucpEDwJ++V2lApkXe+ioKNT0cBaMCre2LOlvj0iXf4Soio/9eHYU8SI7oJb131LO3/gmhljhDXfp1jySV6AcHL6XA95hXjp7JStcquT/6c92s1xUQ59iECgYEAwkOAeSDYnG3ZdhmudSbe3IXTDn46BFWSm52OMfVACyeTifOxoLC+0HmZxX4tvRx2GxZgj2jGYih1OnNhRc3JK6mmg/3dXPnPlQgNeSZUQGnaqWQvd4Lb24g6zos9B5GlFuGAm+huqeXBI+oU/S2WjHl8bJgDKE7pCuDCwK4Ap4UCgYEAvCtSD39rIvsHGtWc2LAE8GoUoS7u0M3q/dBY6+XMciwKSky2EWcJuAWGseUV4SJ0KgL1DeE6M09QMKHA4uLJ+PkreWJDfrGQ8/11H8+41Hw1obQGP/9V8KmECcDK+j9ZQrXIXbjD2YyFtH/Mk0ibS3C547AsqYqf5rHS4Xhk4TkCgYAXuOyAXi11dMigbmRqc/O1FDaAx5NIIjcD/8p0eVF3yz5uEy82wz6Z8K+BeXYWaNpXVnU2LgJDzFL8b0iKoKWXSmFGLwMQLoVV2qTijXauYv7Lvqs5OealOU6NGF28heGWGLV+1HRnFOJwA07K1/1RbChwjmOcUX6N0IKXyufTjQKBgQCroBuNtRsD4dAeIp2XahxnJ2o/hW4fFuHxtJmWN5fcvtx33jXl84QCy0+KbDcji+hF9UKL8VTDPeEXKkGi71Vmd+W2JfEH2m8qi4/LfwvHCq9kGK3mqz44bnTW7Hh1/Vetp93j1cUUZL4C3tm5sGysR1nVGXfy/1RO9vwv2D6yyQKBgDM6bgJtXYsKBq7CKk4mWfP3DOiCpprlL41Rh8vn5NTxfaj09WZKVHy67YR5GwqF7xRokYuxRQmosuBw6o1hoYqlQhgxCARynsxCjJXUGgINLGtXtaqXACGl1y+fn7RxJ/DIeJbPiGkOqVoaCMh2qR8V4PENy1Q4G3Ki4lZ/jMQG"
+	publicRaw := "MIIBCgKCAQEAjspx9OpDtF9/gg6FZhfomgdBF6D6FKes6xxg3IR5VoWHT+qwQ3HyeKyNUiaTDJHLfL6YLxoGMe7TzvPNqrfJBrwZvzw0FAwr8Glypd9oUBmvAAj3K0xLdr4voN1JTDXhVJMhKc2B1keWE/XoXr0js2PAcNYoYnnGmzH22oOr4fAI7CNd/9rp8U2aqkBZXdhWQiPh88440uPEIMLxjOLVvZrT4HtuJxd24Vsknhawfs1mweBNDbrogyPgBnPh/vYnNKde8dCF3CvE0PhNDyJwiL0alTNLwW78XOsQ4IBqlFxW/00Vo5pXEdoGKjoajyF16NvMm8PS3C8k/lKCGVUxnQIDAQAB"
+
+	prvPem := FormatPrivatePemRaw(privateRaw, RSA_PRIVATE_KEY)
+	t.Log(prvPem)
+	pubPem := FormatPublicPemRaw(publicRaw, RSA_PUBLIC_KEY)
+	t.Log(pubPem)
+
+	prvKey, err := NewPrivateKey([]byte(prvPem))
+	assert.Nil(t, err)
+	pubKey, err := NewPublicKey([]byte(pubPem))
+	assert.Nil(t, err)
+
+	cipher, err := pubKey.Encrypt([]byte(data))
+	assert.Nil(t, err)
+
+	plain, err := prvKey.Decrypt(cipher)
+	assert.Nil(t, err)
+	assert.Equal(t, data, string(plain))
+}
+
+func TestFormatPKCS8Raw(t *testing.T) {
+	data := "ILoveNobleGase"
+
+	privateRaw := "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCOynH06kO0X3+CDoVmF+iaB0EXoPoUp6zrHGDchHlWhYdP6rBDcfJ4rI1SJpMMkct8vpgvGgYx7tPO882qt8kGvBm/PDQUDCvwaXKl32hQGa8ACPcrTEt2vi+g3UlMNeFUkyEpzYHWR5YT9ehevSOzY8Bw1ihiecabMfbag6vh8AjsI13/2unxTZqqQFld2FZCI+HzzjjS48QgwvGM4tW9mtPge24nF3bhWySeFrB+zWbB4E0NuuiDI+AGc+H+9ic0p17x0IXcK8TQ+E0PInCIvRqVM0vBbvxc6xDggGqUXFb/TRWjmlcR2gYqOhqPIXXo28ybw9LcLyT+UoIZVTGdAgMBAAECggEAWNb+FbpXS3cLNxjfyIhhkMuopRHj5kv4mwM6BJlrgPhtGrzS0/OmP4xkFNOpM+3V5BQVTWDsr85++8jWkjvsmAMaJdBIOpzkDZ0d1rPsC8IfDm+FkOvUG9nyeiyTuRXgzyUHQiH5gR9i8aJS4/bbqnYKummUEMjhV5e7lXLM0zH9+j/7sZC0xtLIdgiWFm44rfCD+05VekCfmk6JJKFOuwrM5ITCweeDC5ykQPAn75XaUCmRd76Kgo1PRwFowKt7Ys6W+PSJd/hKiKj/14dhTxIjuglvXfUs7f+CaGWOENd+nWPJJXoBwcvpcD3mFeOnslK1yq5P/pz3azXFRDn2IQKBgQDCQ4B5INicbdl2Ga51Jt7chdMOfjoEVZKbnY4x9UALJ5OJ87GgsL7QeZnFfi29HHYbFmCPaMZiKHU6c2FFzckrqaaD/d1c+c+VCA15JlRAadqpZC93gtvbiDrOiz0HkaUW4YCb6G6p5cEj6hT9LZaMeXxsmAMoTukK4MLArgCnhQKBgQC8K1IPf2si+wca1ZzYsATwahShLu7Qzer90Fjr5cxyLApKTLYRZwm4BYax5RXhInQqAvUN4TozT1AwocDi4sn4+St5YkN+sZDz/XUfz7jUfDWhtAY//1XwqYQJwMr6P1lCtchduMPZjIW0f8yTSJtLcLnjsCypip/msdLheGThOQKBgBe47IBeLXV0yKBuZGpz87UUNoDHk0giNwP/ynR5UXfLPm4TLzbDPpnwr4F5dhZo2ldWdTYuAkPMUvxvSIqgpZdKYUYvAxAuhVXapOKNdq5i/su+qzk55qU5To0YXbyF4ZYYtX7UdGcU4nADTsrX/VFsKHCOY5xRfo3QgpfK59ONAoGBAKugG421GwPh0B4inZdqHGcnaj+Fbh8W4fG0mZY3l9y+3HfeNeXzhALLT4psNyOL6EX1QovxVMM94RcqQaLvVWZ35bYl8QfabyqLj8t/C8cKr2QYrearPjhudNbseHX9V62n3ePVxRRkvgLe2bmwbKxHWdUZd/L/VE72/C/YPrLJAoGAMzpuAm1diwoGrsIqTiZZ8/cM6IKmmuUvjVGHy+fk1PF9qPT1ZkpUfLrthHkbCoXvFGiRi7FFCaiy4HDqjWGhiqVCGDEIBHKezEKMldQaAg0sa1e1qpcAIaXXL5+ftHEn8Mh4ls+IaQ6pWhoIyHapHxXg8Q3LVDgbcqLiVn+MxAY="
+	publicRaw := "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjspx9OpDtF9/gg6FZhfomgdBF6D6FKes6xxg3IR5VoWHT+qwQ3HyeKyNUiaTDJHLfL6YLxoGMe7TzvPNqrfJBrwZvzw0FAwr8Glypd9oUBmvAAj3K0xLdr4voN1JTDXhVJMhKc2B1keWE/XoXr0js2PAcNYoYnnGmzH22oOr4fAI7CNd/9rp8U2aqkBZXdhWQiPh88440uPEIMLxjOLVvZrT4HtuJxd24Vsknhawfs1mweBNDbrogyPgBnPh/vYnNKde8dCF3CvE0PhNDyJwiL0alTNLwW78XOsQ4IBqlFxW/00Vo5pXEdoGKjoajyF16NvMm8PS3C8k/lKCGVUxnQIDAQAB"
+
+	prvPem := FormatPrivatePemRaw(privateRaw, PRIVATE_KEY)
+	t.Log(prvPem)
+	pubPem := FormatPublicPemRaw(publicRaw, PUBLIC_KEY)
+	t.Log(pubPem)
+
+	prvKey, err := NewPrivateKey([]byte(prvPem))
+	assert.Nil(t, err)
+	pubKey, err := NewPublicKey([]byte(pubPem))
+	assert.Nil(t, err)
+
+	cipher, err := pubKey.Encrypt([]byte(data))
+	assert.Nil(t, err)
+
+	plain, err := prvKey.Decrypt(cipher)
+	assert.Nil(t, err)
+	assert.Equal(t, data, string(plain))
+}

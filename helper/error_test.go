@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"testing"
 
-	"github.com/noble-gase/ne/codes"
+	"github.com/noble-gase/ne/codekit"
 )
 
 type demo struct {
@@ -17,7 +17,7 @@ type demo struct {
 func TestError(t *testing.T) {
 	ctx := context.Background()
 	err := errors.New("oh no")
-	_ = Error(ctx, codes.FromError(err))
+	_ = Error(ctx, codekit.FromError(err))
 	_ = Error(ctx, err)
 	_ = Error(ctx, err, slog.Int("id", 1), slog.String("name", "hello"))
 	_ = Error(ctx, err, slog.Any("fn", func() {}))

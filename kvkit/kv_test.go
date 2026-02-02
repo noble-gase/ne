@@ -1,0 +1,35 @@
+package kvkit
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestKV(t *testing.T) {
+	kv1 := KV{}
+	kv1.Set("bar", "baz")
+	kv1.Set("foo", "quux")
+
+	assert.Equal(t, "bar=baz&foo=quux", kv1.Encode("=", "&"))
+	assert.Equal(t, "bar:baz#foo:quux", kv1.Encode(":", "#"))
+
+	kv2 := KV{}
+	kv2.Set("bar", "baz@666")
+	kv2.Set("foo", "quux%666")
+
+	assert.Equal(t, "bar=baz@666&foo=quux%666", kv2.Encode("=", "&"))
+	assert.Equal(t, "bar=baz%40666&foo=quux%25666", kv2.Encode("=", "&", WithKVEscape()))
+
+	kv3 := KV{}
+	kv3.Set("hello", "world")
+	kv3.Set("bar", "baz")
+	kv3.Set("foo", "")
+
+	assert.Equal(t, "bar=baz&foo=&hello=world", kv3.Encode("=", "&"))
+	assert.Equal(t, "bar=baz&foo=&hello=world", kv3.Encode("=", "&", WithEmptyMode(EmptyDefault)))
+	assert.Equal(t, "bar=baz&foo&hello=world", kv3.Encode("=", "&", WithEmptyMode(EmptyOnlyKey)))
+	assert.Equal(t, "bar=baz&hello=world", kv3.Encode("=", "&", WithEmptyMode(EmptyIgnore)))
+	assert.Equal(t, "bar=baz&foo=", kv3.Encode("=", "&", WithIgnoreKeys("hello")))
+	assert.Equal(t, "bar=baz", kv3.Encode("=", "&", WithIgnoreKeys("hello"), WithEmptyMode(EmptyIgnore)))
+}

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/noble-gase/ne/codes"
+	"github.com/noble-gase/ne/codekit"
 )
 
 const MaxBufSize = 32 << 10 // 32KB
@@ -53,7 +53,7 @@ func (ret *result) JSON(w http.ResponseWriter, r *http.Request) {
 	w.Write(buf.Bytes())
 }
 
-func New(code codes.Code, data ...any) Result {
+func New(code codekit.Code, data ...any) Result {
 	ret := &result{
 		Code: code.Value(),
 		Msg:  code.Message(),
@@ -65,13 +65,13 @@ func New(code codes.Code, data ...any) Result {
 }
 
 func OK(data ...any) Result {
-	return New(codes.OK, data...)
+	return New(codekit.OK, data...)
 }
 
 func Err(err error) Result {
-	var code codes.Code
+	var code codekit.Code
 	if errors.As(err, &code) {
 		return New(code)
 	}
-	return New(codes.Err)
+	return New(codekit.Err)
 }

@@ -7,7 +7,7 @@ import (
 
 	. "github.com/go-jet/jet/v2/postgres"
 	"github.com/go-jet/jet/v2/qrm"
-	"github.com/noble-gase/ne/sqls"
+	"github.com/noble-gase/ne/sqlkit"
 )
 
 // M 用于 INSERT & UPDATE
@@ -40,7 +40,7 @@ func (m M) Split() (cols ColumnList, vals []any) {
 //	pgsql.Create[model.Demo](ctx, db.DB(), stmt)
 func Create[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) (T, error) {
 	// SQL日志
-	slog.InfoContext(ctx, sqls.Minify(stmt.DebugSql()))
+	slog.InfoContext(ctx, sqlkit.Minify(stmt.DebugSql()))
 
 	var dest T
 	err := stmt.QueryContext(ctx, db, &dest)
@@ -67,7 +67,7 @@ func Create[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) (T, err
 //	pgsql.BatchCreate[model.Demo](ctx, db.DB(), stmt)
 func BatchCreate[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) ([]T, error) {
 	// SQL日志
-	slog.InfoContext(ctx, sqls.Minify(stmt.DebugSql()))
+	slog.InfoContext(ctx, sqlkit.Minify(stmt.DebugSql()))
 
 	var dest []T
 	err := stmt.QueryContext(ctx, db, &dest)
@@ -88,7 +88,7 @@ func BatchCreate[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) ([
 //	pgsql.Update(ctx, db.DB(), stmt)
 func Update(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, error) {
 	// SQL日志
-	slog.InfoContext(ctx, sqls.Minify(stmt.DebugSql()))
+	slog.InfoContext(ctx, sqlkit.Minify(stmt.DebugSql()))
 
 	ret, err := stmt.ExecContext(ctx, db)
 	if err != nil {
@@ -111,7 +111,7 @@ func Update(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, error)
 //	pgsql.Delete(ctx, db.DB(), stmt)
 func Delete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error) {
 	// SQL日志
-	slog.InfoContext(ctx, sqls.Minify(stmt.DebugSql()))
+	slog.InfoContext(ctx, sqlkit.Minify(stmt.DebugSql()))
 
 	ret, err := stmt.ExecContext(ctx, db)
 	if err != nil {
@@ -138,7 +138,7 @@ func FindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, e
 	stmt = stmt.LIMIT(1)
 
 	// SQL日志
-	slog.InfoContext(ctx, sqls.Minify(stmt.DebugSql()))
+	slog.InfoContext(ctx, sqlkit.Minify(stmt.DebugSql()))
 
 	var dest T
 	if err := stmt.QueryContext(ctx, db, &dest); err != nil {
@@ -164,7 +164,7 @@ func FindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, e
 //	pgsql.FindAll[model.Demo](ctx, db.DB(), stmt)
 func FindAll[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) ([]T, error) {
 	// SQL日志
-	slog.InfoContext(ctx, sqls.Minify(stmt.DebugSql()))
+	slog.InfoContext(ctx, sqlkit.Minify(stmt.DebugSql()))
 
 	var dest []T
 	if err := stmt.QueryContext(ctx, db, &dest); err != nil {
@@ -186,7 +186,7 @@ func Count(ctx context.Context, db qrm.DB, fn func(count SelectStatement) Select
 	stmt := fn(SELECT(COUNT(STAR).AS("count")))
 
 	// SQL日志
-	slog.InfoContext(ctx, sqls.Minify(stmt.DebugSql()))
+	slog.InfoContext(ctx, sqlkit.Minify(stmt.DebugSql()))
 
 	var total struct {
 		Count int64
@@ -210,7 +210,7 @@ func Paginate[T any](ctx context.Context, db qrm.DB, fn func(query SelectStateme
 	stmt := fn(SELECT(COUNT(STAR).AS("count")))
 
 	// SQL日志
-	slog.InfoContext(ctx, sqls.Minify(stmt.DebugSql()))
+	slog.InfoContext(ctx, sqlkit.Minify(stmt.DebugSql()))
 
 	var total struct {
 		Count int64
@@ -233,7 +233,7 @@ func Paginate[T any](ctx context.Context, db qrm.DB, fn func(query SelectStateme
 	stmt = fn(SELECT(cols)).ORDER_BY(orderBy...).LIMIT(int64(size)).OFFSET(int64(offset))
 
 	// SQL日志
-	slog.InfoContext(ctx, sqls.Minify(stmt.DebugSql()))
+	slog.InfoContext(ctx, sqlkit.Minify(stmt.DebugSql()))
 
 	var dest []T
 	if err := stmt.QueryContext(ctx, db, &dest); err != nil {

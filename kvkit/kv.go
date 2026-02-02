@@ -84,3 +84,12 @@ func (kv KV) Encode(sym, sep string, opts ...Option) string {
 	}
 	return buf.String()
 }
+
+// URLEncode encodes the KV into “URL encoded” form ("bar=baz&foo=quux") sorted by key.
+func (kv KV) URLEncode() string {
+	query := url.Values{}
+	for k, v := range kv {
+		query.Set(k, v)
+	}
+	return query.Encode()
+}

@@ -285,14 +285,14 @@ func DecryptGCM(key, nonce []byte, data, aad []byte, opt *GCMOption) ([]byte, er
 	}
 
 	var aead cipher.AEAD
-	if opt != nil && (opt.TagSize != 0 || opt.NonceSize != 0) {
+	if opt == nil || (opt.TagSize == 0 && opt.NonceSize == 0) {
+		aead, err = cipher.NewGCM(block)
+	} else {
 		if opt.TagSize != 0 {
 			aead, err = cipher.NewGCMWithTagSize(block, opt.TagSize)
 		} else {
 			aead, err = cipher.NewGCMWithNonceSize(block, opt.NonceSize)
 		}
-	} else {
-		aead, err = cipher.NewGCM(block)
 	}
 	if err != nil {
 		return nil, err

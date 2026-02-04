@@ -23,7 +23,7 @@ go get -u github.com/noble-gase/ne
 | httpzip   | 远程获取 `ZIP` 压缩包中的文件内容                                                            |
 | hashkit   | 封装 Hash 常用方法                                                                           |
 | imgkit    | 图片处理，如：缩略图、裁切、标注等                                                           |
-| leveltree | 基于泛型的菜单和组织单位等分类层级树                                                         |
+| treekit   | 基于泛型的树形结构，可用于：菜单和组织关系等                                                 |
 | mutex     | 基于 Redis 的分布式锁                                                                        |
 | pbkit     | 实现 `url.Values` 和 `proto.Message` 的相互转换                                              |
 | redkit    | 基于 `singleflight` 封装 Redis 常用操作                                                      |

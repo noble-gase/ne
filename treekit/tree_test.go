@@ -6,147 +6,147 @@ import (
 )
 
 type Foo struct {
-	ID   int    `json:"id"`
+	Uid  int    `json:"uid"`
 	Pid  int    `json:"pid"`
 	Name string `json:"name"`
 }
 
-func (f *Foo) GetId() int {
-	return f.ID
+func (f *Foo) ID() int {
+	return f.Uid
 }
 
-func (f *Foo) GetPId() int {
+func (f *Foo) BelongTo() int {
 	return f.Pid
 }
 
 func TestTreeInt(t *testing.T) {
 	data := []*Foo{
 		{
-			ID:   1,
+			Uid:  1,
 			Pid:  0,
 			Name: "foo-1",
 		},
 		{
-			ID:   2,
+			Uid:  2,
 			Pid:  0,
 			Name: "foo-2",
 		},
 		{
-			ID:   3,
+			Uid:  3,
 			Pid:  1,
 			Name: "foo-3",
 		},
 		{
-			ID:   4,
+			Uid:  4,
 			Pid:  1,
 			Name: "foo-4",
 		},
 		{
-			ID:   5,
+			Uid:  5,
 			Pid:  2,
 			Name: "foo-5",
 		},
 		{
-			ID:   6,
+			Uid:  6,
 			Pid:  2,
 			Name: "foo-6",
 		},
 		{
-			ID:   7,
+			Uid:  7,
 			Pid:  3,
 			Name: "foo-7",
 		},
 		{
-			ID:   8,
+			Uid:  8,
 			Pid:  3,
 			Name: "foo-8",
 		},
 		{
-			ID:   9,
+			Uid:  9,
 			Pid:  4,
 			Name: "foo-9",
 		},
 		{
-			ID:   10,
+			Uid:  10,
 			Pid:  4,
 			Name: "foo-10",
 		},
 	}
 
-	tree := NewLevelTree(data, 0)
+	tree := NewTree(data, 0)
 	b, _ := json.Marshal(tree)
 	t.Log(string(b))
 }
 
 type Bar struct {
-	ID   string `json:"id"`
+	Uid  string `json:"uid"`
 	Pid  string `json:"pid"`
 	Name string `json:"name"`
 }
 
-func (b *Bar) GetId() string {
-	return b.ID
+func (b *Bar) ID() string {
+	return b.Uid
 }
 
-func (b *Bar) GetPId() string {
+func (b *Bar) BelongTo() string {
 	return b.Pid
 }
 
 func TestTreeStr(t *testing.T) {
 	data := []*Bar{
 		{
-			ID:   "1",
-			Pid:  "0",
+			Uid:  "1",
+			Pid:  "",
 			Name: "bar-1",
 		},
 		{
-			ID:   "2",
-			Pid:  "0",
+			Uid:  "2",
+			Pid:  "",
 			Name: "bar-2",
 		},
 		{
-			ID:   "3",
+			Uid:  "3",
 			Pid:  "1",
 			Name: "bar-3",
 		},
 		{
-			ID:   "4",
+			Uid:  "4",
 			Pid:  "1",
 			Name: "bar-4",
 		},
 		{
-			ID:   "5",
+			Uid:  "5",
 			Pid:  "2",
 			Name: "bar-5",
 		},
 		{
-			ID:   "6",
+			Uid:  "6",
 			Pid:  "2",
 			Name: "bar-6",
 		},
 		{
-			ID:   "7",
+			Uid:  "7",
 			Pid:  "3",
 			Name: "bar-7",
 		},
 		{
-			ID:   "8",
+			Uid:  "8",
 			Pid:  "3",
 			Name: "bar-8",
 		},
 		{
-			ID:   "9",
+			Uid:  "9",
 			Pid:  "4",
 			Name: "bar-9",
 		},
 		{
-			ID:   "10",
+			Uid:  "10",
 			Pid:  "4",
 			Name: "bar-10",
 		},
 	}
 
-	tree := NewLevelTree(data, "0")
+	tree := NewTree(data, "")
 	b, _ := json.Marshal(tree)
 	t.Log(string(b))
 }

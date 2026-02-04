@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/noble-gase/ne/pbkit"
+	"github.com/noble-gase/ne/protokit"
 	"github.com/noble-gase/ne/validkit"
 	"google.golang.org/protobuf/proto"
 )
@@ -28,10 +28,10 @@ func BindJSON(r *http.Request, obj any) error {
 func BindProto(r *http.Request, msg proto.Message) error {
 	// GET请求
 	if r.Method == http.MethodGet {
-		if err := pbkit.ValuesToMessage(msg, r.URL.Query()); err != nil {
+		if err := protokit.ValuesToMessage(msg, r.URL.Query()); err != nil {
 			return err
 		}
-		return pbkit.Validate(msg)
+		return protokit.Validate(msg)
 	}
 
 	// 根据Content-Type解析请求体
@@ -40,7 +40,7 @@ func BindProto(r *http.Request, msg proto.Message) error {
 		if err := r.ParseForm(); err != nil {
 			return err
 		}
-		if err := pbkit.ValuesToMessage(msg, r.PostForm); err != nil {
+		if err := protokit.ValuesToMessage(msg, r.PostForm); err != nil {
 			return err
 		}
 	case ContentMultipartForm:
@@ -49,7 +49,7 @@ func BindProto(r *http.Request, msg proto.Message) error {
 				return err
 			}
 		}
-		if err := pbkit.ValuesToMessage(msg, r.PostForm); err != nil {
+		if err := protokit.ValuesToMessage(msg, r.PostForm); err != nil {
 			return err
 		}
 	case ContentJSON:
@@ -62,5 +62,5 @@ func BindProto(r *http.Request, msg proto.Message) error {
 	default:
 		return errors.New("unsupported Content-Type")
 	}
-	return pbkit.Validate(msg)
+	return protokit.Validate(msg)
 }

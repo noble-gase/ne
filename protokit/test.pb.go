@@ -4,7 +4,7 @@
 // 	protoc        (unknown)
 // source: test.proto
 
-package pbkit
+package protokit
 
 import (
 	reflect "reflect"
@@ -129,7 +129,7 @@ func (x *DemoRequest) GetFriends() []*User {
 type User struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Tags          []Tag                  `protobuf:"varint,3,rep,packed,name=tags,proto3,enum=pbkit.Tag" json:"tags,omitempty"`
+	Tags          []Tag                  `protobuf:"varint,3,rep,packed,name=tags,proto3,enum=protokit.Tag" json:"tags,omitempty"`
 	Attrs         map[string]string      `protobuf:"bytes,4,rep,name=attrs,proto3" json:"attrs,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -288,20 +288,21 @@ var (
 	file_test_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 	file_test_proto_msgTypes  = make([]protoimpl.MessageInfo, 4)
 	file_test_proto_goTypes   = []any{
-		(Tag)(0),             // 0: pbkit.Tag
-		(*DemoRequest)(nil),  // 1: pbkit.DemoRequest
-		(*User)(nil),         // 2: pbkit.User
-		(*DemoResponse)(nil), // 3: pbkit.DemoResponse
-		nil,                  // 4: pbkit.User.AttrsEntry
+		(Tag)(0),             // 0: protokit.Tag
+		(*DemoRequest)(nil),  // 1: protokit.DemoRequest
+		(*User)(nil),         // 2: protokit.User
+		(*DemoResponse)(nil), // 3: protokit.DemoResponse
+		nil,                  // 4: protokit.User.AttrsEntry
 	}
 )
+
 var file_test_proto_depIdxs = []int32{
-	2, // 0: pbkit.DemoRequest.user:type_name -> pbkit.User
-	2, // 1: pbkit.DemoRequest.friends:type_name -> pbkit.User
-	0, // 2: pbkit.User.tags:type_name -> pbkit.Tag
-	4, // 3: pbkit.User.attrs:type_name -> pbkit.User.AttrsEntry
-	1, // 4: pbkit.Demo.SayHello:input_type -> pbkit.DemoRequest
-	3, // 5: pbkit.Demo.SayHello:output_type -> pbkit.DemoResponse
+	2, // 0: protokit.DemoRequest.user:type_name -> protokit.User
+	2, // 1: protokit.DemoRequest.friends:type_name -> protokit.User
+	0, // 2: protokit.User.tags:type_name -> protokit.Tag
+	4, // 3: protokit.User.attrs:type_name -> protokit.User.AttrsEntry
+	1, // 4: protokit.Demo.SayHello:input_type -> protokit.DemoRequest
+	3, // 5: protokit.Demo.SayHello:output_type -> protokit.DemoResponse
 	5, // [5:6] is the sub-list for method output_type
 	4, // [4:5] is the sub-list for method input_type
 	4, // [4:4] is the sub-list for extension type_name

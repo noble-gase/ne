@@ -36,7 +36,7 @@ type Mutex interface {
 
 // redLock 基于「Redis」实现的分布式锁
 type redLock struct {
-	cli   redis.UniversalClient
+	uc    redis.UniversalClient
 	key   string
 	ttl   time.Duration
 	token string
@@ -85,23 +85,23 @@ func (l *redLock) UnLock(ctx context.Context) error {
 	if len(l.token) == 0 {
 		return nil
 	}
-	if l.cli == nil {
+	if l.uc == nil {
 		return ErrClientNil
 	}
-	return script.Run(context.WithoutCancel(ctx), l.cli, []string{l.key}, l.token).Err()
+	return script.Run(context.WithoutCancel(ctx), l.uc, []string{l.key}, l.token).Err()
 }
 
 func (l *redLock) lock(ctx context.Context) error {
-	if l.cli == nil {
+	if l.uc == nil {
 		return ErrClientNil
 	}
 
 	token := uuid.New().String()
 
-	ok, err := l.cli.SetNX(ctx, l.key, token, l.ttl).Result()
+	ok, err := l.uc.SetNX(ctx, l.key, token, l.ttl).Result()
 	if err != nil {
 		// 尝试GET一次：避免因redis网络错误导致误加锁
-		v, _err := l.cli.Get(ctx, l.key).Result()
+		v, _err := l.uc.Get(ctx, l.key).Result()
 		if _err != nil {
 			if errors.Is(_err, redis.Nil) {
 				return err
@@ -120,13 +120,13 @@ func (l *redLock) lock(ctx context.Context) error {
 }
 
 // RedLock 基于Redis实现的分布式锁实例
-func RedLock(cli redis.UniversalClient, key string, ttl time.Duration) Mutex {
+func RedLock(uc redis.UniversalClient, key string, ttl time.Duration) Mutex {
 	mutex := &redLock{
-		cli: cli,
+		uc:  uc,
 		key: key,
 		ttl: ttl,
 	}
-	if mutex.ttl == 0 {
+	if mutex.ttl <= 0 {
 		mutex.ttl = time.Second * 10
 	}
 	return mutex

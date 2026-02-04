@@ -1,4 +1,4 @@
-package pbkit
+package protokit
 
 import (
 	"net/http"

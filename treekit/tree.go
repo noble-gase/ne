@@ -31,7 +31,7 @@ func buildTree[T Node[E], E comparable](group map[E][]T, rootId E) []*TreeNode[T
 
 // NewTree 构建一颗树
 //
-//	[data] 一组带有pid的数据
+//	[data] 一组带有`pid`的数据
 //	[rootId] 树的起始ID
 func NewTree[T Node[E], E comparable](data []T, rootId E) []*TreeNode[T, E] {
 	group := make(map[E][]T, 0)

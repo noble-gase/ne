@@ -1,4 +1,4 @@
-package pbkit
+package protokit
 
 import (
 	"sync"
@@ -14,10 +14,10 @@ var (
 )
 
 // Validate 验证消息体
-func Validate(msg proto.Message, opts ...protovalidate.ValidatorOption) error {
+func Validate(msg proto.Message) error {
 	if v == nil {
 		once.Do(func() {
-			v, _ = protovalidate.New(opts...)
+			v, _ = protovalidate.New()
 		})
 	}
 	return v.Validate(msg)

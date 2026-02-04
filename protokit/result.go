@@ -1,4 +1,4 @@
-package pbkit
+package protokit
 
 import (
 	"encoding/base64"

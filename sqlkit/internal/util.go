@@ -1,6 +1,14 @@
-package sqlkit
+package internal
 
-import "strings"
+import (
+	"context"
+	"strings"
+	"time"
+)
+
+type LogFunc = func(ctx context.Context, sql string, cost time.Duration, err error)
+
+var Logger LogFunc
 
 func Minify(sql string) string {
 	var (

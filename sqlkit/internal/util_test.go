@@ -1,4 +1,4 @@
-package sqlkit
+package internal
 
 import (
 	"testing"

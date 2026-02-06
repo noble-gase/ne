@@ -1,13 +1,14 @@
-package pgsql
+package sqlite
 
 import (
 	"context"
+	"database/sql"
 	"errors"
-	"log/slog"
+	"time"
 
-	. "github.com/go-jet/jet/v2/postgres"
 	"github.com/go-jet/jet/v2/qrm"
-	"github.com/noble-gase/ne/sqlkit"
+	. "github.com/go-jet/jet/v2/sqlite"
+	"github.com/noble-gase/ne/sqlkit/internal"
 )
 
 // M 用于 INSERT & UPDATE
@@ -29,55 +30,51 @@ func (m M) Split() (cols ColumnList, vals []any) {
 // Create 创建记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/postgres"
+//	import . "github.com/go-jet/jet/v2/sqlite"
 //
 //	// 语句示例
-//	table.Demo.INSERT(table.Demo.Name).VALUES("hello").RETURNING(table.Demo.AllColumns)
+//	table.Demo.INSERT(table.Demo.Name).VALUES("hello")
 //	// or
-//	table.Demo.INSERT(table.Demo.Name).MODEL(model.Demo{Name: "hello"}).RETURNING(table.Demo.AllColumns)
+//	table.Demo.INSERT(table.Demo.Name).MODEL(model.Demo{Name: "hello"})
 //
-//	// 创建方法
-//	pgsql.Create[model.Demo](ctx, db.DB(), stmt)
-func Create[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) (T, error) {
-	// SQL日志
-	slog.InfoContext(ctx, sqlkit.Minify(stmt.DebugSql()))
-
-	var dest T
-	err := stmt.QueryContext(ctx, db, &dest)
-	return dest, err
-}
-
-// BatchCreate 批量创建记录
-//
-//	// 导入模块
-//	import . "github.com/go-jet/jet/v2/postgres"
-//
-//	// 语句示例
+//	// 批量插入
 //	table.Demo.INSERT(table.Demo.Name).
 //		VALUES("hello").
-//		VALUES("world").
-//		RETURNING(table.Demo.AllColumns)
+//		VALUES("world")
 //	// or
 //	table.Demo.INSERT(table.Demo.Name).MODELS([]model.Demo{
 //		{Name: "hello"},
 //		{Name: "world"},
-//	}).RETURNING(table.Demo.AllColumns)
+//	})
 //
 //	// 创建方法
-//	pgsql.BatchCreate[model.Demo](ctx, db.DB(), stmt)
-func BatchCreate[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) ([]T, error) {
-	// SQL日志
-	slog.InfoContext(ctx, sqlkit.Minify(stmt.DebugSql()))
+//	sqlite.Create(ctx, db.DB(), stmt)
+func Create(ctx context.Context, db qrm.DB, stmt InsertStatement) (int64, error) {
+	var (
+		ret sql.Result
+		err error
+	)
 
-	var dest []T
-	err := stmt.QueryContext(ctx, db, &dest)
-	return dest, err
+	start := time.Now()
+	defer func() {
+		if internal.Logger != nil {
+			internal.Logger(ctx, internal.Minify(stmt.DebugSql()), time.Since(start), err)
+		}
+	}()
+
+	ret, err = stmt.ExecContext(ctx, db)
+	if err != nil {
+		return 0, err
+	}
+
+	id, _ := ret.LastInsertId()
+	return id, nil
 }
 
 // Update 更新记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/postgres"
+//	import . "github.com/go-jet/jet/v2/sqlite"
 //
 //	// 语句示例
 //	table.Demo.UPDATE(table.Demo.Name).SET("hello").WHERE(table.Demo.ID.EQ(Int64(1)))
@@ -85,12 +82,21 @@ func BatchCreate[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) ([
 //	table.Demo.UPDATE(table.Demo.Name).MODEL(model.Demo{Name: "hello"}).WHERE(table.Demo.ID.EQ(Int64(1)))
 //
 //	// 更新方法
-//	pgsql.Update(ctx, db.DB(), stmt)
+//	sqlite.Update(ctx, db.DB(), stmt)
 func Update(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, error) {
-	// SQL日志
-	slog.InfoContext(ctx, sqlkit.Minify(stmt.DebugSql()))
+	var (
+		ret sql.Result
+		err error
+	)
 
-	ret, err := stmt.ExecContext(ctx, db)
+	start := time.Now()
+	defer func() {
+		if internal.Logger != nil {
+			internal.Logger(ctx, internal.Minify(stmt.DebugSql()), time.Since(start), err)
+		}
+	}()
+
+	ret, err = stmt.ExecContext(ctx, db)
 	if err != nil {
 		return 0, err
 	}
@@ -102,18 +108,27 @@ func Update(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, error)
 // Delete 删除记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/postgres"
+//	import . "github.com/go-jet/jet/v2/sqlite"
 //
 //	// 语句示例
 //	table.Demo.DELETE().WHERE(table.Demo.ID.EQ(Int64(1)))
 //
 //	// 删除方法
-//	pgsql.Delete(ctx, db.DB(), stmt)
+//	sqlite.Delete(ctx, db.DB(), stmt)
 func Delete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error) {
-	// SQL日志
-	slog.InfoContext(ctx, sqlkit.Minify(stmt.DebugSql()))
+	var (
+		ret sql.Result
+		err error
+	)
 
-	ret, err := stmt.ExecContext(ctx, db)
+	start := time.Now()
+	defer func() {
+		if internal.Logger != nil {
+			internal.Logger(ctx, internal.Minify(stmt.DebugSql()), time.Since(start), err)
+		}
+	}()
+
+	ret, err = stmt.ExecContext(ctx, db)
 	if err != nil {
 		return 0, err
 	}
@@ -125,7 +140,7 @@ func Delete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error)
 // FindOne 查询一条记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/postgres"
+//	import . "github.com/go-jet/jet/v2/sqlite"
 //
 //	// 语句示例
 //	table.Demo.SELECT(table.Demo.AllColumns).WHERE(table.Demo.ID.EQ(Int64(1)))
@@ -133,14 +148,22 @@ func Delete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error)
 //	SELECT(table.Demo.AllColumns).FROM(table.Demo).WHERE(table.Demo.ID.EQ(Int64(1)))
 //
 //	// 查询方法
-//	pgsql.FindOne[model.Demo](ctx, db.DB(), stmt)
+//	sqlite.FindOne[model.Demo](ctx, db.DB(), stmt)
 func FindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, error) {
+	var (
+		dest T
+		err  error
+	)
+
 	stmt = stmt.LIMIT(1)
 
-	// SQL日志
-	slog.InfoContext(ctx, sqlkit.Minify(stmt.DebugSql()))
+	start := time.Now()
+	defer func() {
+		if internal.Logger != nil {
+			internal.Logger(ctx, internal.Minify(stmt.DebugSql()), time.Since(start), err)
+		}
+	}()
 
-	var dest T
 	if err := stmt.QueryContext(ctx, db, &dest); err != nil {
 		if errors.Is(err, qrm.ErrNoRows) {
 			return nil, nil
@@ -153,7 +176,7 @@ func FindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, e
 // FindAll 查询多条记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/postgres"
+//	import . "github.com/go-jet/jet/v2/sqlite"
 //
 //	// 语句示例
 //	table.Demo.SELECT(table.Demo.AllColumns).WHERE(table.Demo.Name.LIKE(String("%hello%")))
@@ -161,12 +184,20 @@ func FindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, e
 //	SELECT(table.Demo.AllColumns).FROM(table.Demo).WHERE(table.Demo.Name.LIKE(String("%hello%")))
 //
 //	// 查询方法
-//	pgsql.FindAll[model.Demo](ctx, db.DB(), stmt)
+//	sqlite.FindAll[model.Demo](ctx, db.DB(), stmt)
 func FindAll[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) ([]T, error) {
-	// SQL日志
-	slog.InfoContext(ctx, sqlkit.Minify(stmt.DebugSql()))
+	var (
+		dest []T
+		err  error
+	)
 
-	var dest []T
+	start := time.Now()
+	defer func() {
+		if internal.Logger != nil {
+			internal.Logger(ctx, internal.Minify(stmt.DebugSql()), time.Since(start), err)
+		}
+	}()
+
 	if err := stmt.QueryContext(ctx, db, &dest); err != nil {
 		return nil, err
 	}
@@ -176,21 +207,29 @@ func FindAll[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) ([]T, 
 // Count 返回记录数
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/postgres"
+//	import . "github.com/go-jet/jet/v2/sqlite"
 //
 //	// 查询方法
-//	pgsql.Count(ctx, db.DB(), func(count SelectStatement) SelectStatement {
+//	sqlite.Count(ctx, db.DB(), func(count SelectStatement) SelectStatement {
 //		return count.FROM(table.Demo.Table).WHERE(table.Demo.Name.LIKE(String("%hello%")))
 //	})
 func Count(ctx context.Context, db qrm.DB, fn func(count SelectStatement) SelectStatement) (int64, error) {
+	var (
+		total struct {
+			Count int64
+		}
+		err error
+	)
+
 	stmt := fn(SELECT(COUNT(STAR).AS("count")))
 
-	// SQL日志
-	slog.InfoContext(ctx, sqlkit.Minify(stmt.DebugSql()))
+	start := time.Now()
+	defer func() {
+		if internal.Logger != nil {
+			internal.Logger(ctx, internal.Minify(stmt.DebugSql()), time.Since(start), err)
+		}
+	}()
 
-	var total struct {
-		Count int64
-	}
 	if err := stmt.QueryContext(ctx, db, &total); err != nil {
 		return 0, err
 	}
@@ -200,27 +239,43 @@ func Count(ctx context.Context, db qrm.DB, fn func(count SelectStatement) Select
 // Paginate 分页查询
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/postgres"
+//	import . "github.com/go-jet/jet/v2/sqlite"
 //
 //	// 查询方法
-//	pgsql.Paginate[model.Demo](ctx, db.DB(), func(query SelectStatement) SelectStatement {
+//	sqlite.Paginate[model.Demo](ctx, db.DB(), func(query SelectStatement) SelectStatement {
 //		return query.FROM(table.Demo.Table).WHERE(table.Demo.Name.LIKE(String("%hello%")))
 //	}, page, size, table.Demo.AllColumns, table.Demo.ID.DESC())
 func Paginate[T any](ctx context.Context, db qrm.DB, fn func(query SelectStatement) SelectStatement, page, size int, cols ColumnList, orderBy ...OrderByClause) ([]T, int64, error) {
-	stmt := fn(SELECT(COUNT(STAR).AS("count")))
+	var (
+		total struct {
+			Count int64
+		}
+		countErr error
+	)
 
-	// SQL日志
-	slog.InfoContext(ctx, sqlkit.Minify(stmt.DebugSql()))
+	countStmt := fn(SELECT(COUNT(STAR).AS("count")))
 
-	var total struct {
-		Count int64
-	}
-	if err := stmt.QueryContext(ctx, db, &total); err != nil {
-		return nil, 0, err
+	countStart := time.Now()
+	defer func() {
+		if internal.Logger != nil {
+			internal.Logger(ctx, internal.Minify(countStmt.DebugSql()), time.Since(countStart), countErr)
+		}
+	}()
+
+	countErr = countStmt.QueryContext(ctx, db, &total)
+	if countErr != nil {
+		return nil, 0, countErr
 	}
 	if total.Count == 0 {
 		return []T{}, 0, nil
 	}
+
+	// 数据查询
+
+	var (
+		dest     []T
+		queryErr error
+	)
 
 	if page <= 0 {
 		page = 1
@@ -230,14 +285,18 @@ func Paginate[T any](ctx context.Context, db qrm.DB, fn func(query SelectStateme
 	}
 	offset := (page - 1) * size
 
-	stmt = fn(SELECT(cols)).ORDER_BY(orderBy...).LIMIT(int64(size)).OFFSET(int64(offset))
+	queryStmt := fn(SELECT(cols)).ORDER_BY(orderBy...).LIMIT(int64(size)).OFFSET(int64(offset))
 
-	// SQL日志
-	slog.InfoContext(ctx, sqlkit.Minify(stmt.DebugSql()))
+	queryStart := time.Now()
+	defer func() {
+		if internal.Logger != nil {
+			internal.Logger(ctx, internal.Minify(queryStmt.DebugSql()), time.Since(queryStart), queryErr)
+		}
+	}()
 
-	var dest []T
-	if err := stmt.QueryContext(ctx, db, &dest); err != nil {
-		return nil, 0, err
+	queryErr = queryStmt.QueryContext(ctx, db, &dest)
+	if queryErr != nil {
+		return nil, 0, queryErr
 	}
 	return dest, total.Count, nil
 }

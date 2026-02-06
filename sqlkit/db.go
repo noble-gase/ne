@@ -7,6 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/noble-gase/ne/sqlkit/internal"
 )
 
 // Config 数据库初始化配置
@@ -49,4 +50,8 @@ func NewDB(cfg *Config) (*sql.DB, error) {
 	db.SetConnMaxLifetime(cfg.ConnMaxLifetime)
 
 	return db, nil
+}
+
+func SetLogger(fn internal.LogFunc) {
+	internal.Logger = fn
 }

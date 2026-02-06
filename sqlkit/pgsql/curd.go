@@ -273,6 +273,7 @@ func Paginate[T any](ctx context.Context, db qrm.DB, fn func(query SelectStateme
 		countErr error
 	)
 
+	// 构建 count 查询
 	countStmt := fn(SELECT(COUNT(STAR).AS("count")))
 
 	countStart := time.Now()
@@ -305,6 +306,7 @@ func Paginate[T any](ctx context.Context, db qrm.DB, fn func(query SelectStateme
 	}
 	offset := (page - 1) * size
 
+	// 构建分页查询
 	queryStmt := fn(SELECT(cols)).ORDER_BY(orderBy...).LIMIT(int64(size)).OFFSET(int64(offset))
 
 	queryStart := time.Now()

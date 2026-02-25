@@ -6,8 +6,6 @@
 
 [氖-Ne] Go开发工具包
 
-## 获取
-
 ```shell
 go get -u github.com/noble-gase/ne
 ```

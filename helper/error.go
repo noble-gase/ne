@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/noble-gase/ne/codekit"
 )
 
@@ -49,4 +50,41 @@ func Error(ctx context.Context, err error, attrs ...slog.Attr) error {
 	}, caller)
 
 	return codekit.Err
+}
+
+// MCPToolResultError logs the error with caller, then returns the mcp.CallToolResult
+func MCPToolResultError(ctx context.Context, err error, attrs ...slog.Attr) *mcp.CallToolResult {
+	if err == nil {
+		return nil
+	}
+
+	var code codekit.Code
+	if errors.As(err, &code) {
+		return mcp.NewToolResultError(code.Error())
+	}
+
+	// Skip level 1 to get the caller function
+	pc, file, line, _ := runtime.Caller(1)
+	// Get the function details
+	var name string
+	if fn := runtime.FuncForPC(pc); fn != nil {
+		parts := strings.Split(fn.Name(), "/")
+		name = parts[len(parts)-1]
+	}
+
+	caller := slog.Attr{
+		Key: "caller",
+		Value: slog.GroupValue(
+			slog.String("func", name),
+			slog.String("file", file),
+			slog.Int("line", line),
+		),
+	}
+
+	slog.LogAttrs(ctx, slog.LevelError, err.Error(), slog.Attr{
+		Key:   "context",
+		Value: slog.GroupValue(attrs...),
+	}, caller)
+
+	return mcp.NewToolResultError(codekit.Err.Error())
 }

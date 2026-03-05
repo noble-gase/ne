@@ -24,7 +24,7 @@ type code struct {
 }
 
 func (c code) Error() string {
-	return fmt.Sprintf("[%d] %s", c.val, c.msg)
+	return fmt.Sprintf("%d | %s", c.val, c.msg)
 }
 
 func (c code) Value() int {

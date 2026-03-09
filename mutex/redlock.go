@@ -26,12 +26,12 @@ end
 
 // Mutex 分布式锁
 type Mutex interface {
-	// Lock 获取锁（未获取到：err = mutex.Nil）
-	Lock(ctx context.Context) error
-	// TryLock 尝试获取锁（未获取到：err = mutex.Nil）
-	TryLock(ctx context.Context, attempts int, duration time.Duration) error
-	// UnLock 释放锁
-	UnLock(ctx context.Context) error
+	// Acquire 获取锁（未获取到：err = mutex.Nil）
+	Acquire(ctx context.Context) error
+	// TryAcquire 尝试获取锁（未获取到：err = mutex.Nil）
+	TryAcquire(ctx context.Context, attempts int, duration time.Duration) error
+	// Release 释放锁
+	Release(ctx context.Context) error
 }
 
 // redLock 基于「Redis」实现的分布式锁
@@ -42,14 +42,14 @@ type redLock struct {
 	token string
 }
 
-func (l *redLock) Lock(ctx context.Context) error {
+func (l *redLock) Acquire(ctx context.Context) error {
 	select {
 	case <-ctx.Done(): // timeout or canceled
 		return context.Cause(ctx)
 	default:
 	}
 
-	if err := l.lock(ctx); err != nil {
+	if err := l.setnx(ctx); err != nil {
 		return err
 	}
 	if len(l.token) != 0 {
@@ -58,7 +58,7 @@ func (l *redLock) Lock(ctx context.Context) error {
 	return Nil
 }
 
-func (l *redLock) TryLock(ctx context.Context, attempts int, duration time.Duration) error {
+func (l *redLock) TryAcquire(ctx context.Context, attempts int, duration time.Duration) error {
 	threshold := attempts - 1
 	for i := range attempts {
 		select {
@@ -68,7 +68,7 @@ func (l *redLock) TryLock(ctx context.Context, attempts int, duration time.Durat
 		}
 
 		// attempt to acquire lock
-		if err := l.lock(ctx); err != nil {
+		if err := l.setnx(ctx); err != nil {
 			return err
 		}
 		if len(l.token) != 0 {
@@ -81,7 +81,7 @@ func (l *redLock) TryLock(ctx context.Context, attempts int, duration time.Durat
 	return Nil
 }
 
-func (l *redLock) UnLock(ctx context.Context) error {
+func (l *redLock) Release(ctx context.Context) error {
 	if len(l.token) == 0 {
 		return nil
 	}
@@ -91,7 +91,7 @@ func (l *redLock) UnLock(ctx context.Context) error {
 	return script.Run(context.WithoutCancel(ctx), l.uc, []string{l.key}, l.token).Err()
 }
 
-func (l *redLock) lock(ctx context.Context) error {
+func (l *redLock) setnx(ctx context.Context) error {
 	if l.uc == nil {
 		return ErrClientNil
 	}

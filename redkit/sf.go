@@ -52,4 +52,6 @@ type Options struct {
 	ConnMaxIdleTime int `json:"conn_max_idle_time" mapstructure:"conn_max_idle_time"`
 	// ConnMaxLifetime 连接最大生命时长（单位：秒）
 	ConnMaxLifetime int `json:"conn_max_lifetime" mapstructure:"conn_max_lifetime"`
+	// InsecureSkipVerify 是否跳过证书验证
+	InsecureSkipVerify bool `json:"insecure_skip_verify" mapstructure:"insecure_skip_verify"`
 }

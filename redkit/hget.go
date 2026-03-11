@@ -49,7 +49,7 @@ func HGet[T any](ctx context.Context, uc redis.UniversalClient, key, field strin
 			if sec <= 0 {
 				sec = 1
 			}
-			_err = scriptHSet.Run(ctx, uc, []string{key}, field, string(b), sec).Err()
+			_err = script.Run(ctx, uc, []string{key}, field, string(b), sec).Err()
 		} else {
 			_err = uc.HSet(ctx, key, field, string(b)).Err()
 		}

@@ -22,7 +22,8 @@ go get -u github.com/noble-gase/ne
 | imgkit    | 图片处理，如：缩略图、裁切、标注等                                                           |
 | treekit   | 基于泛型的树形结构，可用于：菜单和组织关系等                                                 |
 | pbkit     | 实现 `url.Values` 和 `proto.Message` 的相互转换                                              |
-| redkit    | Redis 相关，包含分布式锁 和 基于 `singleflight` 封装的常用操作                               |
+| redkit    | 基于 `singleflight` 封装 Redis 常用操作                                                      |
+| redlock   | 基于 Redis 的分布式锁                                                                        |
 | retry     | 重试操作                                                                                     |
 | sqlkit    | 包含DB初始化和事务等封装 和 基于 [`Jet`](https://github.com/go-jet/jet) 的 curd 封装         |
 | stepkit   | 分批次处理切片                                                                               |

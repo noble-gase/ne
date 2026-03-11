@@ -1,4 +1,4 @@
-package redkit
+package redlock
 
 import (
 	"context"
@@ -14,7 +14,13 @@ import (
 // Nil 未获取到锁
 var Nil = helper.NilError("redlock: nil")
 
-var ErrClientNil = errors.New("redis client is nil (forgotten initialize?)")
+var script = redis.NewScript(`
+if redis.call("GET", KEYS[1]) == ARGV[1] then
+	return redis.call("DEL", KEYS[1])
+else
+	return 0
+end
+`)
 
 // RedLock 基于「Redis」实现的分布式锁
 type RedLock struct {
@@ -67,22 +73,15 @@ func (l *RedLock) Release(ctx context.Context) error {
 	if len(l.token) == 0 {
 		return nil
 	}
-	if l.uc == nil {
-		return ErrClientNil
-	}
-	return scriptLock.Run(context.WithoutCancel(ctx), l.uc, []string{l.key}, l.token).Err()
+	return script.Run(context.WithoutCancel(ctx), l.uc, []string{l.key}, l.token).Err()
 }
 
 func (l *RedLock) setnx(ctx context.Context) error {
-	if l.uc == nil {
-		return ErrClientNil
-	}
-
 	token := uuid.New().String()
 
 	ok, err := l.uc.SetNX(ctx, l.key, token, l.ttl).Result()
 	if err != nil {
-		// 尝试GET一次：避免因redis网络错误导致误加锁
+		// 尝试GET一次：避免因网络错误导致误加锁
 		v, _err := l.uc.Get(ctx, l.key).Result()
 		if _err != nil {
 			if errors.Is(_err, redis.Nil) {
@@ -101,8 +100,8 @@ func (l *RedLock) setnx(ctx context.Context) error {
 	return nil
 }
 
-// NewRedLock 基于Redis实现的分布式锁实例
-func NewRedLock(uc redis.UniversalClient, key string, ttl time.Duration) *RedLock {
+// New 返回一个Redis分布式锁
+func New(uc redis.UniversalClient, key string, ttl time.Duration) *RedLock {
 	mutex := &RedLock{
 		uc:  uc,
 		key: key,

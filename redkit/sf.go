@@ -26,6 +26,8 @@ type Config struct {
 }
 
 type Options struct {
+	// DB 数据库
+	DB int `json:"db" mapstructure:"db"`
 	// Username 用户名
 	Username string `json:"username" mapstructure:"username"`
 	// Password 密码

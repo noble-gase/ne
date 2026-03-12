@@ -3,7 +3,6 @@ package sqlkit
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"runtime/debug"
 )
@@ -15,11 +14,6 @@ type (
 
 // Transaction 执行数据库事务
 func Transaction(ctx context.Context, db *sql.DB, fn func(ctx context.Context, tx *sql.Tx) error, opts ...*sql.TxOptions) (err error) {
-	if db == nil {
-		err = errors.New("db is nil (forgotten initialize?)")
-		return
-	}
-
 	var opt *sql.TxOptions
 	if len(opts) != 0 {
 		opt = opts[0]

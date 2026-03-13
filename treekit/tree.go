@@ -3,15 +3,15 @@ package treekit
 // Node 节点泛型约束
 type Node[E comparable] interface {
 	ID() E
-	BelongTo() E
+	PID() E
 }
 
 // TreeNode 树定义
 type TreeNode[T Node[E], E comparable] struct {
-	ID       E                 `json:"id"`
-	BelongTo E                 `json:"belong_to,omitempty"`
-	Data     T                 `json:"data"`
-	Kids     []*TreeNode[T, E] `json:"kids,omitempty"`
+	ID   E                 `json:"id"`
+	PID  E                 `json:"pid,omitempty"`
+	Data T                 `json:"data"`
+	Kids []*TreeNode[T, E] `json:"kids,omitempty"`
 }
 
 func buildTree[T Node[E], E comparable](group map[E][]T, rootId E) []*TreeNode[T, E] {
@@ -20,10 +20,10 @@ func buildTree[T Node[E], E comparable](group map[E][]T, rootId E) []*TreeNode[T
 	root := make([]*TreeNode[T, E], 0, count)
 	for _, v := range nodes {
 		root = append(root, &TreeNode[T, E]{
-			ID:       v.ID(),
-			BelongTo: v.BelongTo(),
-			Data:     v,
-			Kids:     buildTree(group, v.ID()),
+			ID:   v.ID(),
+			PID:  v.PID(),
+			Data: v,
+			Kids: buildTree(group, v.ID()),
 		})
 	}
 	return root
@@ -36,7 +36,7 @@ func buildTree[T Node[E], E comparable](group map[E][]T, rootId E) []*TreeNode[T
 func NewTree[T Node[E], E comparable](data []T, rootId E) []*TreeNode[T, E] {
 	group := make(map[E][]T, 0)
 	for _, v := range data {
-		pid := v.BelongTo()
+		pid := v.PID()
 		if _, ok := group[pid]; !ok {
 			group[pid] = make([]T, 0)
 		}

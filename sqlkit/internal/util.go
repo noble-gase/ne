@@ -12,44 +12,83 @@ var Logger LogFunc
 
 func Minify(sql string) string {
 	var (
-		out          []rune
 		inSingle     bool
 		inDouble     bool
 		lastWasSpace bool
+		runes        = []rune(sql)
+		n            = len(runes)
 	)
 
-	for _, r := range sql {
-		switch r {
-		case '\'':
-			// 遇到单引号时切换单引号状态（不在双引号中）
+	var out strings.Builder
+	for i := 0; i < n; i++ {
+		r := runes[i]
+		switch {
+		case !inSingle && !inDouble && r == '-' && i+1 < n && runes[i+1] == '-':
+			// 单行注释，跳到行尾
+			for i < n && runes[i] != '\n' {
+				i++
+			}
+			// 注释替换为一个空格（避免前后词粘连）
+			if !lastWasSpace {
+				out.WriteRune(' ')
+				lastWasSpace = true
+			}
+
+		case !inSingle && !inDouble && r == '/' && i+1 < n && runes[i+1] == '*':
+			// 多行注释
+			i += 2
+			for i+1 < n && (runes[i] != '*' || runes[i+1] != '/') {
+				i++
+			}
+			i++ // 跳过 '/'
+			if !lastWasSpace {
+				out.WriteRune(' ')
+				lastWasSpace = true
+			}
+
+		case r == '\'':
 			if !inDouble {
-				inSingle = !inSingle
-			}
-			out = append(out, r)
-			lastWasSpace = false
-		case '"':
-			// 遇到双引号时切换双引号状态（不在单引号中）
-			if !inSingle {
-				inDouble = !inDouble
-			}
-			out = append(out, r)
-			lastWasSpace = false
-		case ' ', '\t', '\n', '\r':
-			if inSingle || inDouble {
-				// 引号内：保留原样
-				out = append(out, r)
-			} else {
-				// 引号外：压缩为一个空格
-				if !lastWasSpace {
-					out = append(out, ' ')
-					lastWasSpace = true
+				// 处理 '' 转义
+				if inSingle && i+1 < n && runes[i+1] == '\'' {
+					out.WriteRune(r)
+					out.WriteRune(r)
+					i++
+				} else {
+					inSingle = !inSingle
+					out.WriteRune(r)
 				}
+			} else {
+				out.WriteRune(r)
 			}
+			lastWasSpace = false
+
+		case r == '"':
+			if !inSingle {
+				if inDouble && i+1 < n && runes[i+1] == '"' {
+					out.WriteRune(r)
+					out.WriteRune(r)
+					i++
+				} else {
+					inDouble = !inDouble
+					out.WriteRune(r)
+				}
+			} else {
+				out.WriteRune(r)
+			}
+			lastWasSpace = false
+
+		case r == ' ' || r == '\t' || r == '\n' || r == '\r':
+			if inSingle || inDouble {
+				out.WriteRune(r)
+			} else if !lastWasSpace {
+				out.WriteRune(' ')
+				lastWasSpace = true
+			}
+
 		default:
-			out = append(out, r)
+			out.WriteRune(r)
 			lastWasSpace = false
 		}
 	}
-
-	return strings.TrimSpace(string(out))
+	return strings.TrimSpace(out.String())
 }

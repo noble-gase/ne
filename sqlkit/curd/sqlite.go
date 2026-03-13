@@ -1,4 +1,4 @@
-package mysql
+package curd
 
 import (
 	"context"
@@ -6,15 +6,15 @@ import (
 	"errors"
 	"time"
 
-	. "github.com/go-jet/jet/v2/mysql"
 	"github.com/go-jet/jet/v2/qrm"
+	. "github.com/go-jet/jet/v2/sqlite"
 	"github.com/noble-gase/ne/sqlkit/internal"
 )
 
-// M 用于 INSERT & UPDATE
-type M map[Column]any
+// SQLiteMap 用于 SQLite 的 INSERT & UPDATE
+type SQLiteMap map[Column]any
 
-func (m M) Split() (cols ColumnList, vals []any) {
+func (m SQLiteMap) Split() (cols ColumnList, vals []any) {
 	cap := len(m)
 
 	cols = make(ColumnList, 0, cap)
@@ -27,10 +27,10 @@ func (m M) Split() (cols ColumnList, vals []any) {
 	return
 }
 
-// Create 创建记录
+// SQLiteCreate 创建记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/mysql"
+//	import . "github.com/go-jet/jet/v2/sqlite"
 //
 //	// 语句示例
 //	table.Demo.INSERT(table.Demo.Name).VALUES("hello")
@@ -48,8 +48,8 @@ func (m M) Split() (cols ColumnList, vals []any) {
 //	})
 //
 //	// 创建方法
-//	mysql.Create(ctx, db.DB(), stmt)
-func Create(ctx context.Context, db qrm.DB, stmt InsertStatement) (int64, error) {
+//	SQLiteCreate(ctx, db, stmt)
+func SQLiteCreate(ctx context.Context, db qrm.DB, stmt InsertStatement) (int64, error) {
 	var (
 		ret sql.Result
 		err error
@@ -71,10 +71,10 @@ func Create(ctx context.Context, db qrm.DB, stmt InsertStatement) (int64, error)
 	return id, nil
 }
 
-// Update 更新记录
+// SQLiteUpdate 更新记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/mysql"
+//	import . "github.com/go-jet/jet/v2/sqlite"
 //
 //	// 语句示例
 //	table.Demo.UPDATE(table.Demo.Name).SET("hello").WHERE(table.Demo.ID.EQ(Int64(1)))
@@ -82,8 +82,8 @@ func Create(ctx context.Context, db qrm.DB, stmt InsertStatement) (int64, error)
 //	table.Demo.UPDATE(table.Demo.Name).MODEL(model.Demo{Name: "hello"}).WHERE(table.Demo.ID.EQ(Int64(1)))
 //
 //	// 更新方法
-//	mysql.Update(ctx, db.DB(), stmt)
-func Update(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, error) {
+//	SQLiteUpdate(ctx, db, stmt)
+func SQLiteUpdate(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, error) {
 	var (
 		ret sql.Result
 		err error
@@ -105,17 +105,17 @@ func Update(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, error)
 	return rows, nil
 }
 
-// Delete 删除记录
+// SQLiteDelete 删除记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/mysql"
+//	import . "github.com/go-jet/jet/v2/sqlite"
 //
 //	// 语句示例
 //	table.Demo.DELETE().WHERE(table.Demo.ID.EQ(Int64(1)))
 //
 //	// 删除方法
-//	mysql.Delete(ctx, db.DB(), stmt)
-func Delete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error) {
+//	SQLiteDelete(ctx, db, stmt)
+func SQLiteDelete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error) {
 	var (
 		ret sql.Result
 		err error
@@ -137,10 +137,10 @@ func Delete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error)
 	return rows, nil
 }
 
-// FindOne 查询一条记录
+// SQLiteFindOne 查询一条记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/mysql"
+//	import . "github.com/go-jet/jet/v2/sqlite"
 //
 //	// 语句示例
 //	table.Demo.SELECT(table.Demo.AllColumns).WHERE(table.Demo.ID.EQ(Int64(1)))
@@ -148,8 +148,8 @@ func Delete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error)
 //	SELECT(table.Demo.AllColumns).FROM(table.Demo).WHERE(table.Demo.ID.EQ(Int64(1)))
 //
 //	// 查询方法
-//	mysql.FindOne[model.Demo](ctx, db.DB(), stmt)
-func FindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, error) {
+//	SQLiteFindOne[model.Demo](ctx, db, stmt)
+func SQLiteFindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, error) {
 	var (
 		dest T
 		err  error
@@ -173,10 +173,10 @@ func FindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, e
 	return &dest, nil
 }
 
-// FindAll 查询多条记录
+// SQLiteFindAll 查询多条记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/mysql"
+//	import . "github.com/go-jet/jet/v2/sqlite"
 //
 //	// 语句示例
 //	table.Demo.SELECT(table.Demo.AllColumns).WHERE(table.Demo.Name.LIKE(String("%hello%")))
@@ -184,8 +184,8 @@ func FindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, e
 //	SELECT(table.Demo.AllColumns).FROM(table.Demo).WHERE(table.Demo.Name.LIKE(String("%hello%")))
 //
 //	// 查询方法
-//	mysql.FindAll[model.Demo](ctx, db.DB(), stmt)
-func FindAll[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) ([]T, error) {
+//	SQLiteFindAll[model.Demo](ctx, db, stmt)
+func SQLiteFindAll[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) ([]T, error) {
 	var (
 		dest []T
 		err  error
@@ -204,16 +204,16 @@ func FindAll[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) ([]T, 
 	return dest, nil
 }
 
-// Count 返回记录数
+// SQLiteCount 返回记录数
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/mysql"
+//	import . "github.com/go-jet/jet/v2/sqlite"
 //
 //	// 查询方法
-//	mysql.Count(ctx, db.DB(), func(count SelectStatement) SelectStatement {
+//	SQLiteCount(ctx, db, func(count SelectStatement) SelectStatement {
 //		return count.FROM(table.Demo.Table).WHERE(table.Demo.Name.LIKE(String("%hello%")))
 //	})
-func Count(ctx context.Context, db qrm.DB, fn func(count SelectStatement) SelectStatement) (int64, error) {
+func SQLiteCount(ctx context.Context, db qrm.DB, fn func(count SelectStatement) SelectStatement) (int64, error) {
 	var (
 		total struct {
 			Count int64
@@ -230,22 +230,22 @@ func Count(ctx context.Context, db qrm.DB, fn func(count SelectStatement) Select
 		}
 	}()
 
-	if err = stmt.QueryContext(ctx, db, &total); err != nil {
+	if err := stmt.QueryContext(ctx, db, &total); err != nil {
 		return 0, err
 	}
 	return total.Count, nil
 }
 
-// Paginate 分页查询
+// SQLitePaginate 分页查询
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/mysql"
+//	import . "github.com/go-jet/jet/v2/sqlite"
 //
 //	// 查询方法
-//	mysql.Paginate[model.Demo](ctx, db.DB(), func(query SelectStatement) SelectStatement {
+//	SQLitePaginate[model.Demo](ctx, db, func(query SelectStatement) SelectStatement {
 //		return query.FROM(table.Demo.Table).WHERE(table.Demo.Name.LIKE(String("%hello%")))
 //	}, page, size, table.Demo.AllColumns, table.Demo.ID.DESC())
-func Paginate[T any](ctx context.Context, db qrm.DB, fn func(query SelectStatement) SelectStatement, page, size int, cols ColumnList, orderBy ...OrderByClause) ([]T, int64, error) {
+func SQLitePaginate[T any](ctx context.Context, db qrm.DB, fn func(query SelectStatement) SelectStatement, page, size int, cols ColumnList, orderBy ...OrderByClause) ([]T, int64, error) {
 	var (
 		total struct {
 			Count int64

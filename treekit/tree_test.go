@@ -15,7 +15,7 @@ func (f *Foo) ID() int {
 	return f.Uid
 }
 
-func (f *Foo) BelongTo() int {
+func (f *Foo) PID() int {
 	return f.Pid
 }
 
@@ -88,7 +88,7 @@ func (b *Bar) ID() string {
 	return b.Uid
 }
 
-func (b *Bar) BelongTo() string {
+func (b *Bar) PID() string {
 	return b.Pid
 }
 

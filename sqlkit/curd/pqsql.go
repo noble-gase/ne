@@ -1,4 +1,4 @@
-package pgsql
+package curd
 
 import (
 	"context"
@@ -11,10 +11,10 @@ import (
 	"github.com/noble-gase/ne/sqlkit/internal"
 )
 
-// M 用于 INSERT & UPDATE
-type M map[Column]any
+// PgSQLMap 用于 PostgreSQL 的 INSERT & UPDATE
+type PgSQLMap map[Column]any
 
-func (m M) Split() (cols ColumnList, vals []any) {
+func (m PgSQLMap) Split() (cols ColumnList, vals []any) {
 	cap := len(m)
 
 	cols = make(ColumnList, 0, cap)
@@ -27,7 +27,7 @@ func (m M) Split() (cols ColumnList, vals []any) {
 	return
 }
 
-// Create 创建记录
+// PgSQLCreate 创建记录
 //
 //	// 导入模块
 //	import . "github.com/go-jet/jet/v2/postgres"
@@ -38,8 +38,8 @@ func (m M) Split() (cols ColumnList, vals []any) {
 //	table.Demo.INSERT(table.Demo.Name).MODEL(model.Demo{Name: "hello"}).RETURNING(table.Demo.AllColumns)
 //
 //	// 创建方法
-//	pgsql.Create[model.Demo](ctx, db.DB(), stmt)
-func Create[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) (T, error) {
+//	PgSQLCreate[model.Demo](ctx, db, stmt)
+func PgSQLCreate[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) (T, error) {
 	var (
 		dest T
 		err  error
@@ -56,7 +56,7 @@ func Create[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) (T, err
 	return dest, err
 }
 
-// BatchCreate 批量创建记录
+// PgSQLBatchCreate 批量创建记录
 //
 //	// 导入模块
 //	import . "github.com/go-jet/jet/v2/postgres"
@@ -73,8 +73,8 @@ func Create[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) (T, err
 //	}).RETURNING(table.Demo.AllColumns)
 //
 //	// 创建方法
-//	pgsql.BatchCreate[model.Demo](ctx, db.DB(), stmt)
-func BatchCreate[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) ([]T, error) {
+//	PgSQLBatchCreate[model.Demo](ctx, db, stmt)
+func PgSQLBatchCreate[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) ([]T, error) {
 	var (
 		dest []T
 		err  error
@@ -91,7 +91,7 @@ func BatchCreate[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) ([
 	return dest, err
 }
 
-// Update 更新记录
+// PgSQLUpdate 更新记录
 //
 //	// 导入模块
 //	import . "github.com/go-jet/jet/v2/postgres"
@@ -102,8 +102,8 @@ func BatchCreate[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) ([
 //	table.Demo.UPDATE(table.Demo.Name).MODEL(model.Demo{Name: "hello"}).WHERE(table.Demo.ID.EQ(Int64(1)))
 //
 //	// 更新方法
-//	pgsql.Update(ctx, db.DB(), stmt)
-func Update(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, error) {
+//	PgSQLUpdate(ctx, db, stmt)
+func PgSQLUpdate(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, error) {
 	var (
 		ret sql.Result
 		err error
@@ -125,7 +125,7 @@ func Update(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, error)
 	return rows, nil
 }
 
-// Delete 删除记录
+// PgSQLDelete 删除记录
 //
 //	// 导入模块
 //	import . "github.com/go-jet/jet/v2/postgres"
@@ -134,8 +134,8 @@ func Update(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, error)
 //	table.Demo.DELETE().WHERE(table.Demo.ID.EQ(Int64(1)))
 //
 //	// 删除方法
-//	pgsql.Delete(ctx, db.DB(), stmt)
-func Delete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error) {
+//	PgSQLDelete(ctx, db, stmt)
+func PgSQLDelete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error) {
 	var (
 		ret sql.Result
 		err error
@@ -157,7 +157,7 @@ func Delete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error)
 	return rows, nil
 }
 
-// FindOne 查询一条记录
+// PgSQLFindOne 查询一条记录
 //
 //	// 导入模块
 //	import . "github.com/go-jet/jet/v2/postgres"
@@ -168,8 +168,8 @@ func Delete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error)
 //	SELECT(table.Demo.AllColumns).FROM(table.Demo).WHERE(table.Demo.ID.EQ(Int64(1)))
 //
 //	// 查询方法
-//	pgsql.FindOne[model.Demo](ctx, db.DB(), stmt)
-func FindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, error) {
+//	PgSQLFindOne[model.Demo](ctx, db, stmt)
+func PgSQLFindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, error) {
 	var (
 		dest T
 		err  error
@@ -193,7 +193,7 @@ func FindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, e
 	return &dest, nil
 }
 
-// FindAll 查询多条记录
+// PgSQLFindAll 查询多条记录
 //
 //	// 导入模块
 //	import . "github.com/go-jet/jet/v2/postgres"
@@ -204,8 +204,8 @@ func FindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, e
 //	SELECT(table.Demo.AllColumns).FROM(table.Demo).WHERE(table.Demo.Name.LIKE(String("%hello%")))
 //
 //	// 查询方法
-//	pgsql.FindAll[model.Demo](ctx, db.DB(), stmt)
-func FindAll[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) ([]T, error) {
+//	PgSQLFindAll[model.Demo](ctx, db, stmt)
+func PgSQLFindAll[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) ([]T, error) {
 	var (
 		dest []T
 		err  error
@@ -224,16 +224,16 @@ func FindAll[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) ([]T, 
 	return dest, nil
 }
 
-// Count 返回记录数
+// PgSQLCount 返回记录数
 //
 //	// 导入模块
 //	import . "github.com/go-jet/jet/v2/postgres"
 //
 //	// 查询方法
-//	pgsql.Count(ctx, db.DB(), func(count SelectStatement) SelectStatement {
+//	PgSQLCount(ctx, db, func(count SelectStatement) SelectStatement {
 //		return count.FROM(table.Demo.Table).WHERE(table.Demo.Name.LIKE(String("%hello%")))
 //	})
-func Count(ctx context.Context, db qrm.DB, fn func(count SelectStatement) SelectStatement) (int64, error) {
+func PgSQLCount(ctx context.Context, db qrm.DB, fn func(count SelectStatement) SelectStatement) (int64, error) {
 	var (
 		total struct {
 			Count int64
@@ -256,16 +256,16 @@ func Count(ctx context.Context, db qrm.DB, fn func(count SelectStatement) Select
 	return total.Count, nil
 }
 
-// Paginate 分页查询
+// PgSQLPaginate 分页查询
 //
 //	// 导入模块
 //	import . "github.com/go-jet/jet/v2/postgres"
 //
 //	// 查询方法
-//	pgsql.Paginate[model.Demo](ctx, db.DB(), func(query SelectStatement) SelectStatement {
+//	PgSQLPaginate[model.Demo](ctx, db, func(query SelectStatement) SelectStatement {
 //		return query.FROM(table.Demo.Table).WHERE(table.Demo.Name.LIKE(String("%hello%")))
 //	}, page, size, table.Demo.AllColumns, table.Demo.ID.DESC())
-func Paginate[T any](ctx context.Context, db qrm.DB, fn func(query SelectStatement) SelectStatement, page, size int, cols ColumnList, orderBy ...OrderByClause) ([]T, int64, error) {
+func PgSQLPaginate[T any](ctx context.Context, db qrm.DB, fn func(query SelectStatement) SelectStatement, page, size int, cols ColumnList, orderBy ...OrderByClause) ([]T, int64, error) {
 	var (
 		total struct {
 			Count int64

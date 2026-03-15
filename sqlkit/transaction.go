@@ -46,7 +46,7 @@ func Transaction(ctx context.Context, db *sql.DB, fn func(ctx context.Context, t
 	}
 
 	if e := tx.Commit(); e != nil {
-		err = fmt.Errorf("commit: %w", e)
+		err = rollback(fmt.Errorf("commit: %w", e))
 	}
 	return
 }
@@ -67,6 +67,10 @@ func TransactionX(ctx context.Context, db DB, fn func(ctx context.Context, tx TX
 
 		x, e := v.BeginTx(ctx, opt)
 		if e != nil {
+			// 回滚已开启的事务
+			for _, t := range tx {
+				_ = t.Rollback()
+			}
 			err = fmt.Errorf("begin transaction (%s): %w", k, e)
 			return
 		}

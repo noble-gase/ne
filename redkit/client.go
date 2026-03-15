@@ -1,8 +1,13 @@
 package redkit
 
 import (
+	"context"
+	"crypto/tls"
+	"time"
+
 	"github.com/noble-gase/ne/helper"
 	"github.com/redis/go-redis/v9"
+	"github.com/redis/go-redis/v9/maintnotifications"
 	"golang.org/x/sync/singleflight"
 )
 
@@ -54,4 +59,41 @@ type Options struct {
 	ConnMaxLifetime int `json:"conn_max_lifetime" mapstructure:"conn_max_lifetime"`
 	// InsecureSkipVerify 是否跳过证书验证
 	InsecureSkipVerify bool `json:"insecure_skip_verify" mapstructure:"insecure_skip_verify"`
+}
+
+func NewClient(cfg *Config) (redis.UniversalClient, error) {
+	opts := &redis.UniversalOptions{
+		Addrs:           cfg.Addrs,
+		Username:        cfg.Options.Username,
+		Password:        cfg.Options.Password,
+		DialTimeout:     time.Duration(cfg.Options.DialTimeout) * time.Second,
+		ReadTimeout:     time.Duration(cfg.Options.ReadTimeout) * time.Second,
+		WriteTimeout:    time.Duration(cfg.Options.WriteTimeout) * time.Second,
+		PoolSize:        cfg.Options.PoolSize,
+		PoolTimeout:     time.Duration(cfg.Options.PoolTimeout) * time.Second,
+		MinIdleConns:    cfg.Options.MinIdleConns,
+		MaxIdleConns:    cfg.Options.MaxIdleConns,
+		MaxActiveConns:  cfg.Options.MaxActiveConns,
+		ConnMaxIdleTime: time.Duration(cfg.Options.ConnMaxIdleTime) * time.Second,
+		ConnMaxLifetime: time.Duration(cfg.Options.ConnMaxLifetime) * time.Second,
+		MaintNotificationsConfig: &maintnotifications.Config{
+			Mode: maintnotifications.ModeDisabled,
+		},
+	}
+	if cfg.Options.InsecureSkipVerify {
+		opts.TLSConfig = &tls.Config{
+			InsecureSkipVerify: true,
+		}
+	}
+	client := redis.NewUniversalClient(opts)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	// verify connection
+	if err := client.Ping(ctx).Err(); err != nil {
+		_ = client.Close()
+		return nil, err
+	}
+	return client, nil
 }

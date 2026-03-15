@@ -64,6 +64,7 @@ type Options struct {
 func NewClient(cfg *Config) (redis.UniversalClient, error) {
 	opts := &redis.UniversalOptions{
 		Addrs:           cfg.Addrs,
+		DB:              cfg.Options.DB,
 		Username:        cfg.Options.Username,
 		Password:        cfg.Options.Password,
 		DialTimeout:     time.Duration(cfg.Options.DialTimeout) * time.Second,

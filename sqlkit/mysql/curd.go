@@ -157,7 +157,7 @@ func Delete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error)
 //	// 语句示例
 //	table.Demo.SELECT(table.Demo.AllColumns).WHERE(table.Demo.ID.EQ(jet.Int64(1)))
 //	// or
-//	SELECT(table.Demo.AllColumns).FROM(table.Demo).WHERE(table.Demo.ID.EQ(jet.Int64(1)))
+//	jet.SELECT(table.Demo.AllColumns).FROM(table.Demo).WHERE(table.Demo.ID.EQ(jet.Int64(1)))
 //
 //	// 查询方法
 //	mysql.FindOne[model.Demo](ctx, db, stmt)
@@ -196,7 +196,7 @@ func FindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, e
 //	// 语句示例
 //	table.Demo.SELECT(table.Demo.AllColumns).WHERE(table.Demo.Name.LIKE(jet.String("%hello%")))
 //	// or
-//	SELECT(table.Demo.AllColumns).FROM(table.Demo).WHERE(table.Demo.Name.LIKE(jet.String("%hello%")))
+//	jet.SELECT(table.Demo.AllColumns).FROM(table.Demo).WHERE(table.Demo.Name.LIKE(jet.String("%hello%")))
 //
 //	// 查询方法
 //	mysql.FindAll[model.Demo](ctx, db, stmt)

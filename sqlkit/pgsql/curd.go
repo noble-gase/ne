@@ -1,4 +1,4 @@
-package curd
+package pgsql
 
 import (
 	"context"
@@ -6,15 +6,15 @@ import (
 	"errors"
 	"time"
 
+	. "github.com/go-jet/jet/v2/postgres"
 	"github.com/go-jet/jet/v2/qrm"
-	. "github.com/go-jet/jet/v2/sqlite"
 	"github.com/noble-gase/ne/sqlkit/internal"
 )
 
-// SQLiteMap 用于 SQLite 的 INSERT & UPDATE
-type SQLiteMap map[Column]any
+// M 用于 PostgreSQL 的 INSERT & UPDATE
+type M map[Column]any
 
-func (m SQLiteMap) Split() (cols ColumnList, vals []any) {
+func (m M) Split() (cols ColumnList, vals []any) {
 	cap := len(m)
 
 	cols = make(ColumnList, 0, cap)
@@ -27,32 +27,25 @@ func (m SQLiteMap) Split() (cols ColumnList, vals []any) {
 	return
 }
 
-// SQLiteCreate 创建记录
+// Create 创建记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/sqlite"
+//	import (
+//		jet "github.com/go-jet/jet/v2/postgres"
+//		"github.com/noble-gase/ne/sqlkit/pgsql"
+//	)
 //
 //	// 语句示例
-//	table.Demo.INSERT(table.Demo.Name).VALUES("hello")
+//	table.Demo.INSERT(table.Demo.Name).VALUES("hello").RETURNING(table.Demo.AllColumns)
 //	// or
-//	table.Demo.INSERT(table.Demo.Name).MODEL(model.Demo{Name: "hello"})
-//
-//	// 批量插入
-//	table.Demo.INSERT(table.Demo.Name).
-//		VALUES("hello").
-//		VALUES("world")
-//	// or
-//	table.Demo.INSERT(table.Demo.Name).MODELS([]model.Demo{
-//		{Name: "hello"},
-//		{Name: "world"},
-//	})
+//	table.Demo.INSERT(table.Demo.Name).MODEL(model.Demo{Name: "hello"}).RETURNING(table.Demo.AllColumns)
 //
 //	// 创建方法
-//	SQLiteCreate(ctx, db, stmt)
-func SQLiteCreate(ctx context.Context, db qrm.DB, stmt InsertStatement) (int64, error) {
+//	pgsql.Create[model.Demo](ctx, db, stmt)
+func Create[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) (T, error) {
 	var (
-		ret sql.Result
-		err error
+		dest T
+		err  error
 	)
 
 	start := time.Now()
@@ -62,19 +55,55 @@ func SQLiteCreate(ctx context.Context, db qrm.DB, stmt InsertStatement) (int64, 
 		}
 	}()
 
-	ret, err = stmt.ExecContext(ctx, db)
-	if err != nil {
-		return 0, err
-	}
-
-	id, _ := ret.LastInsertId()
-	return id, nil
+	err = stmt.QueryContext(ctx, db, &dest)
+	return dest, err
 }
 
-// SQLiteUpdate 更新记录
+// BatchCreate 批量创建记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/sqlite"
+//	import (
+//		jet "github.com/go-jet/jet/v2/postgres"
+//		"github.com/noble-gase/ne/sqlkit/pgsql"
+//	)
+//
+//	// 语句示例
+//	table.Demo.INSERT(table.Demo.Name).
+//		VALUES("hello").
+//		VALUES("world").
+//		RETURNING(table.Demo.AllColumns)
+//	// or
+//	table.Demo.INSERT(table.Demo.Name).MODELS([]model.Demo{
+//		{Name: "hello"},
+//		{Name: "world"},
+//	}).RETURNING(table.Demo.AllColumns)
+//
+//	// 创建方法
+//	pgsql.BatchCreate[model.Demo](ctx, db, stmt)
+func BatchCreate[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) ([]T, error) {
+	var (
+		dest []T
+		err  error
+	)
+
+	start := time.Now()
+	defer func() {
+		if internal.Logger != nil {
+			internal.Logger(ctx, internal.Minify(stmt.DebugSql()), time.Since(start), err)
+		}
+	}()
+
+	err = stmt.QueryContext(ctx, db, &dest)
+	return dest, err
+}
+
+// Update 更新记录
+//
+//	// 导入模块
+//	import (
+//		jet "github.com/go-jet/jet/v2/postgres"
+//		"github.com/noble-gase/ne/sqlkit/pgsql"
+//	)
 //
 //	// 语句示例
 //	table.Demo.UPDATE(table.Demo.Name).SET("hello").WHERE(table.Demo.ID.EQ(Int64(1)))
@@ -82,8 +111,8 @@ func SQLiteCreate(ctx context.Context, db qrm.DB, stmt InsertStatement) (int64, 
 //	table.Demo.UPDATE(table.Demo.Name).MODEL(model.Demo{Name: "hello"}).WHERE(table.Demo.ID.EQ(Int64(1)))
 //
 //	// 更新方法
-//	SQLiteUpdate(ctx, db, stmt)
-func SQLiteUpdate(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, error) {
+//	pgsql.Update(ctx, db, stmt)
+func Update(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, error) {
 	var (
 		ret sql.Result
 		err error
@@ -105,17 +134,20 @@ func SQLiteUpdate(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, 
 	return rows, nil
 }
 
-// SQLiteDelete 删除记录
+// Delete 删除记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/sqlite"
+//	import (
+//		jet "github.com/go-jet/jet/v2/postgres"
+//		"github.com/noble-gase/ne/sqlkit/pgsql"
+//	)
 //
 //	// 语句示例
 //	table.Demo.DELETE().WHERE(table.Demo.ID.EQ(Int64(1)))
 //
 //	// 删除方法
-//	SQLiteDelete(ctx, db, stmt)
-func SQLiteDelete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error) {
+//	pgsql.Delete(ctx, db, stmt)
+func Delete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error) {
 	var (
 		ret sql.Result
 		err error
@@ -137,10 +169,13 @@ func SQLiteDelete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, 
 	return rows, nil
 }
 
-// SQLiteFindOne 查询一条记录
+// FindOne 查询一条记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/sqlite"
+//	import (
+//		. "github.com/go-jet/jet/v2/postgres"
+//		"github.com/noble-gase/ne/sqlkit/pgsql"
+//	)
 //
 //	// 语句示例
 //	table.Demo.SELECT(table.Demo.AllColumns).WHERE(table.Demo.ID.EQ(Int64(1)))
@@ -148,8 +183,8 @@ func SQLiteDelete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, 
 //	SELECT(table.Demo.AllColumns).FROM(table.Demo).WHERE(table.Demo.ID.EQ(Int64(1)))
 //
 //	// 查询方法
-//	SQLiteFindOne[model.Demo](ctx, db, stmt)
-func SQLiteFindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, error) {
+//	pgsql.FindOne[model.Demo](ctx, db, stmt)
+func FindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, error) {
 	var (
 		dest T
 		err  error
@@ -173,10 +208,13 @@ func SQLiteFindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) 
 	return &dest, nil
 }
 
-// SQLiteFindAll 查询多条记录
+// FindAll 查询多条记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/sqlite"
+//	import (
+//		jet "github.com/go-jet/jet/v2/postgres"
+//		"github.com/noble-gase/ne/sqlkit/pgsql"
+//	)
 //
 //	// 语句示例
 //	table.Demo.SELECT(table.Demo.AllColumns).WHERE(table.Demo.Name.LIKE(String("%hello%")))
@@ -184,8 +222,8 @@ func SQLiteFindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) 
 //	SELECT(table.Demo.AllColumns).FROM(table.Demo).WHERE(table.Demo.Name.LIKE(String("%hello%")))
 //
 //	// 查询方法
-//	SQLiteFindAll[model.Demo](ctx, db, stmt)
-func SQLiteFindAll[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) ([]T, error) {
+//	pgsql.FindAll[model.Demo](ctx, db, stmt)
+func FindAll[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) ([]T, error) {
 	var (
 		dest []T
 		err  error
@@ -204,16 +242,19 @@ func SQLiteFindAll[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) 
 	return dest, nil
 }
 
-// SQLiteCount 返回记录数
+// Count 返回记录数
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/sqlite"
+//	import (
+//		jet "github.com/go-jet/jet/v2/postgres"
+//		"github.com/noble-gase/ne/sqlkit/pgsql"
+//	)
 //
 //	// 查询方法
-//	SQLiteCount(ctx, db, func(count SelectStatement) SelectStatement {
+//	pgsql.Count(ctx, db, func(count jet.SelectStatement) jet.SelectStatement {
 //		return count.FROM(table.Demo.Table).WHERE(table.Demo.Name.LIKE(String("%hello%")))
 //	})
-func SQLiteCount(ctx context.Context, db qrm.DB, fn func(count SelectStatement) SelectStatement) (int64, error) {
+func Count(ctx context.Context, db qrm.DB, fn func(count SelectStatement) SelectStatement) (int64, error) {
 	var (
 		total struct {
 			Count int64
@@ -236,16 +277,19 @@ func SQLiteCount(ctx context.Context, db qrm.DB, fn func(count SelectStatement) 
 	return total.Count, nil
 }
 
-// SQLitePaginate 分页查询
+// Paginate 分页查询
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/sqlite"
+//	import (
+//		jet "github.com/go-jet/jet/v2/postgres"
+//		"github.com/noble-gase/ne/sqlkit/pgsql"
+//	)
 //
 //	// 查询方法
-//	SQLitePaginate[model.Demo](ctx, db, func(query SelectStatement) SelectStatement {
+//	pgsql.Paginate[model.Demo](ctx, db, func(query jet.SelectStatement) jet.SelectStatement {
 //		return query.FROM(table.Demo.Table).WHERE(table.Demo.Name.LIKE(String("%hello%")))
 //	}, page, size, table.Demo.AllColumns, table.Demo.ID.DESC())
-func SQLitePaginate[T any](ctx context.Context, db qrm.DB, fn func(query SelectStatement) SelectStatement, page, size int, cols ColumnList, orderBy ...OrderByClause) ([]T, int64, error) {
+func Paginate[T any](ctx context.Context, db qrm.DB, fn func(query SelectStatement) SelectStatement, page, size int, cols ColumnList, orderBy ...OrderByClause) ([]T, int64, error) {
 	var (
 		total struct {
 			Count int64

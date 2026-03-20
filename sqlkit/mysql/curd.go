@@ -1,4 +1,4 @@
-package curd
+package mysql
 
 import (
 	"context"
@@ -11,10 +11,10 @@ import (
 	"github.com/noble-gase/ne/sqlkit/internal"
 )
 
-// MySQLMap 用于 MySQL 的 INSERT & UPDATE
-type MySQLMap map[Column]any
+// M 用于 mysql. 的 INSERT & UPDATE
+type M map[Column]any
 
-func (m MySQLMap) Split() (cols ColumnList, vals []any) {
+func (m M) Split() (cols ColumnList, vals []any) {
 	cap := len(m)
 
 	cols = make(ColumnList, 0, cap)
@@ -27,10 +27,13 @@ func (m MySQLMap) Split() (cols ColumnList, vals []any) {
 	return
 }
 
-// MySQLCreate 创建记录
+// Create 创建记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/mysql"
+//	import (
+//		jet "github.com/go-jet/jet/v2/mysql"
+//		"github.com/noble-gase/ne/sqlkit/mysql"
+//	)
 //
 //	// 语句示例
 //	table.Demo.INSERT(table.Demo.Name).VALUES("hello")
@@ -48,8 +51,8 @@ func (m MySQLMap) Split() (cols ColumnList, vals []any) {
 //	})
 //
 //	// 创建方法
-//	MySQLCreate(ctx, db, stmt)
-func MySQLCreate(ctx context.Context, db qrm.DB, stmt InsertStatement) (int64, error) {
+//	mysql.Create(ctx, db, stmt)
+func Create(ctx context.Context, db qrm.DB, stmt InsertStatement) (int64, error) {
 	var (
 		ret sql.Result
 		err error
@@ -71,10 +74,13 @@ func MySQLCreate(ctx context.Context, db qrm.DB, stmt InsertStatement) (int64, e
 	return id, nil
 }
 
-// MySQLUpdate 更新记录
+// Update 更新记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/mysql"
+//	import (
+//		jet "github.com/go-jet/jet/v2/mysql"
+//		"github.com/noble-gase/ne/sqlkit/mysql"
+//	)
 //
 //	// 语句示例
 //	table.Demo.UPDATE(table.Demo.Name).SET("hello").WHERE(table.Demo.ID.EQ(Int64(1)))
@@ -82,8 +88,8 @@ func MySQLCreate(ctx context.Context, db qrm.DB, stmt InsertStatement) (int64, e
 //	table.Demo.UPDATE(table.Demo.Name).MODEL(model.Demo{Name: "hello"}).WHERE(table.Demo.ID.EQ(Int64(1)))
 //
 //	// 更新方法
-//	MySQLUpdate(ctx, db, stmt)
-func MySQLUpdate(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, error) {
+//	mysql.Update(ctx, db, stmt)
+func Update(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, error) {
 	var (
 		ret sql.Result
 		err error
@@ -105,17 +111,17 @@ func MySQLUpdate(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, e
 	return rows, nil
 }
 
-// MySQLDelete 删除记录
+// Delete 删除记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/mysql"
+//	import jet "github.com/go-jet/jet/v2/mysql"
 //
 //	// 语句示例
 //	table.Demo.DELETE().WHERE(table.Demo.ID.EQ(Int64(1)))
 //
 //	// 删除方法
-//	MySQLDelete(ctx, db, stmt)
-func MySQLDelete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error) {
+//	mysql.Delete(ctx, db, stmt)
+func Delete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error) {
 	var (
 		ret sql.Result
 		err error
@@ -137,10 +143,13 @@ func MySQLDelete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, e
 	return rows, nil
 }
 
-// MySQLFindOne 查询一条记录
+// FindOne 查询一条记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/mysql"
+//	import (
+//		jet "github.com/go-jet/jet/v2/mysql"
+//		"github.com/noble-gase/ne/sqlkit/mysql"
+//	)
 //
 //	// 语句示例
 //	table.Demo.SELECT(table.Demo.AllColumns).WHERE(table.Demo.ID.EQ(Int64(1)))
@@ -148,8 +157,8 @@ func MySQLDelete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, e
 //	SELECT(table.Demo.AllColumns).FROM(table.Demo).WHERE(table.Demo.ID.EQ(Int64(1)))
 //
 //	// 查询方法
-//	MySQLFindOne[model.Demo](ctx, db, stmt)
-func MySQLFindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, error) {
+//	mysql.FindOne[model.Demo](ctx, db, stmt)
+func FindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, error) {
 	var (
 		dest T
 		err  error
@@ -173,10 +182,13 @@ func MySQLFindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (
 	return &dest, nil
 }
 
-// MySQLFindAll 查询多条记录
+// FindAll 查询多条记录
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/mysql"
+//	import (
+//		jet "github.com/go-jet/jet/v2/mysql"
+//		"github.com/noble-gase/ne/sqlkit/mysql"
+//	)
 //
 //	// 语句示例
 //	table.Demo.SELECT(table.Demo.AllColumns).WHERE(table.Demo.Name.LIKE(String("%hello%")))
@@ -184,8 +196,8 @@ func MySQLFindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (
 //	SELECT(table.Demo.AllColumns).FROM(table.Demo).WHERE(table.Demo.Name.LIKE(String("%hello%")))
 //
 //	// 查询方法
-//	MySQLFindAll[model.Demo](ctx, db, stmt)
-func MySQLFindAll[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) ([]T, error) {
+//	mysql.FindAll[model.Demo](ctx, db, stmt)
+func FindAll[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) ([]T, error) {
 	var (
 		dest []T
 		err  error
@@ -204,16 +216,19 @@ func MySQLFindAll[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (
 	return dest, nil
 }
 
-// MySQLCount 返回记录数
+// Count 返回记录数
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/mysql"
+//	import (
+//		jet "github.com/go-jet/jet/v2/mysql"
+//		"github.com/noble-gase/ne/sqlkit/mysql"
+//	)
 //
 //	// 查询方法
-//	MySQLCount(ctx, db, func(count SelectStatement) SelectStatement {
+//	mysql.Count(ctx, db, func(count jet.SelectStatement) jet.SelectStatement {
 //		return count.FROM(table.Demo.Table).WHERE(table.Demo.Name.LIKE(String("%hello%")))
 //	})
-func MySQLCount(ctx context.Context, db qrm.DB, fn func(count SelectStatement) SelectStatement) (int64, error) {
+func Count(ctx context.Context, db qrm.DB, fn func(count SelectStatement) SelectStatement) (int64, error) {
 	var (
 		total struct {
 			Count int64
@@ -236,16 +251,19 @@ func MySQLCount(ctx context.Context, db qrm.DB, fn func(count SelectStatement) S
 	return total.Count, nil
 }
 
-// MySQLPaginate 分页查询
+// Paginate 分页查询
 //
 //	// 导入模块
-//	import . "github.com/go-jet/jet/v2/mysql"
+//	import (
+//		jet "github.com/go-jet/jet/v2/mysql"
+//		"github.com/noble-gase/ne/sqlkit/mysql"
+//	)
 //
 //	// 查询方法
-//	MySQLPaginate[model.Demo](ctx, db, func(query SelectStatement) SelectStatement {
+//	mysql.Paginate[model.Demo](ctx, db, func(query jet.SelectStatement) jet.SelectStatement {
 //		return query.FROM(table.Demo.Table).WHERE(table.Demo.Name.LIKE(String("%hello%")))
 //	}, page, size, table.Demo.AllColumns, table.Demo.ID.DESC())
-func MySQLPaginate[T any](ctx context.Context, db qrm.DB, fn func(query SelectStatement) SelectStatement, page, size int, cols ColumnList, orderBy ...OrderByClause) ([]T, int64, error) {
+func Paginate[T any](ctx context.Context, db qrm.DB, fn func(query SelectStatement) SelectStatement, page, size int, cols ColumnList, orderBy ...OrderByClause) ([]T, int64, error) {
 	var (
 		total struct {
 			Count int64

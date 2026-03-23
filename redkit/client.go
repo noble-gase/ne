@@ -14,7 +14,7 @@ import (
 var sf singleflight.Group
 
 // Discard 丢弃数据，不缓存
-const Discard = helper.NilError("caches: discarded")
+const Discard = helper.NilError("redkit: discarded")
 
 var script = redis.NewScript(`
 redis.call('HSET', KEYS[1], ARGV[1], ARGV[2])

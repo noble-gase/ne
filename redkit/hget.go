@@ -54,7 +54,7 @@ func HGet[T any](ctx context.Context, uc redis.UniversalClient, key, field strin
 			_err = uc.HSet(ctx, key, field, string(b)).Err()
 		}
 		if _err != nil && !errors.Is(_err, redis.Nil) {
-			slog.LogAttrs(ctx, slog.LevelError, "[caches:HGet] hset data failed", slog.String("key", key), slog.String("field", field), slog.String("value", string(b)), slog.Any("error", _err))
+			slog.LogAttrs(ctx, slog.LevelError, "[redkit:HGet] hset data failed", slog.String("key", key), slog.String("field", field), slog.String("value", string(b)), slog.Any("error", _err))
 		}
 
 		return data, nil

@@ -43,7 +43,7 @@ func Get[T any](ctx context.Context, uc redis.UniversalClient, key string, fn fu
 			return nil, _err
 		}
 		if _err = uc.Set(ctx, key, string(b), ttl).Err(); _err != nil {
-			slog.LogAttrs(ctx, slog.LevelError, "[caches:Get] set data failed", slog.String("key", key), slog.String("value", string(b)), slog.Any("error", _err))
+			slog.LogAttrs(ctx, slog.LevelError, "[redkit:Get] set data failed", slog.String("key", key), slog.String("value", string(b)), slog.Any("error", _err))
 		}
 
 		return data, nil

@@ -148,6 +148,8 @@ func Delete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error)
 
 // FindOne 查询一条记录
 //
+// 注意：参数 T 必须为非指针类型
+//
 //	// 导入模块
 //	import (
 //		jet "github.com/go-jet/jet/v2/mysql"
@@ -199,7 +201,7 @@ func FindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, e
 //	jet.SELECT(table.Demo.AllColumns).FROM(table.Demo).WHERE(table.Demo.Name.LIKE(jet.String("%hello%")))
 //
 //	// 查询方法
-//	mysql.FindAll[model.Demo](ctx, db, stmt)
+//	mysql.FindAll[*model.Demo](ctx, db, stmt)
 func FindAll[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) ([]T, error) {
 	var (
 		dest []T
@@ -263,7 +265,7 @@ func Count(ctx context.Context, db qrm.DB, fn func(count SelectStatement) Select
 //	)
 //
 //	// 查询方法
-//	mysql.Paginate[model.Demo](ctx, db, func(query jet.SelectStatement) jet.SelectStatement {
+//	mysql.Paginate[*model.Demo](ctx, db, func(query jet.SelectStatement) jet.SelectStatement {
 //		return query.FROM(table.Demo.Table).WHERE(table.Demo.Name.LIKE(jet.String("%hello%")))
 //	}, page, size, table.Demo.AllColumns, table.Demo.ID.DESC())
 func Paginate[T any](ctx context.Context, db qrm.DB, fn func(query SelectStatement) SelectStatement, page, size int, cols ColumnList, orderBy ...OrderByClause) ([]T, int64, error) {

@@ -2,6 +2,7 @@ package mysql
 
 import . "github.com/go-jet/jet/v2/mysql"
 
+// Exprs 将一组值转换为 Expression 列表，常用于 IN 查询
 func Exprs[T any](values []T, fn func(T) Expression) []Expression {
 	exprs := make([]Expression, 0, len(values))
 	for _, v := range values {

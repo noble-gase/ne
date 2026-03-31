@@ -27,7 +27,7 @@ func (m M) Split() (cols ColumnList, vals []any) {
 	return
 }
 
-// Create 创建记录
+// Insert 插入记录
 //
 //	// 导入模块
 //	import (
@@ -40,9 +40,9 @@ func (m M) Split() (cols ColumnList, vals []any) {
 //	// or
 //	table.Demo.INSERT(table.Demo.Name).MODEL(model.Demo{Name: "hello"}).RETURNING(table.Demo.AllColumns)
 //
-//	// 创建方法
-//	pgsql.Create[model.Demo](ctx, db, stmt)
-func Create[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) (T, error) {
+//	// 执行方法
+//	pgsql.Insert[model.Demo](ctx, db, stmt)
+func Insert[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) (T, error) {
 	var (
 		dest T
 		err  error
@@ -59,7 +59,7 @@ func Create[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) (T, err
 	return dest, err
 }
 
-// BatchCreate 批量创建记录
+// BatchInsert 批量插入记录
 //
 //	// 导入模块
 //	import (
@@ -78,9 +78,9 @@ func Create[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) (T, err
 //		{Name: "world"},
 //	}).RETURNING(table.Demo.AllColumns)
 //
-//	// 创建方法
-//	pgsql.BatchCreate[model.Demo](ctx, db, stmt)
-func BatchCreate[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) ([]T, error) {
+//	// 执行方法
+//	pgsql.BatchInsert[model.Demo](ctx, db, stmt)
+func BatchInsert[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) ([]T, error) {
 	var (
 		dest []T
 		err  error
@@ -110,7 +110,7 @@ func BatchCreate[T any](ctx context.Context, db qrm.DB, stmt InsertStatement) ([
 //	// or
 //	table.Demo.UPDATE(table.Demo.Name).MODEL(model.Demo{Name: "hello"}).WHERE(table.Demo.ID.EQ(jet.Int64(1)))
 //
-//	// 更新方法
+//	// 执行方法
 //	pgsql.Update(ctx, db, stmt)
 func Update(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, error) {
 	var (
@@ -145,7 +145,7 @@ func Update(ctx context.Context, db qrm.DB, stmt UpdateStatement) (int64, error)
 //	// 语句示例
 //	table.Demo.DELETE().WHERE(table.Demo.ID.EQ(jet.Int64(1)))
 //
-//	// 删除方法
+//	// 执行方法
 //	pgsql.Delete(ctx, db, stmt)
 func Delete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error) {
 	var (
@@ -184,7 +184,7 @@ func Delete(ctx context.Context, db qrm.DB, stmt DeleteStatement) (int64, error)
 //	// or
 //	jet.SELECT(table.Demo.AllColumns).FROM(table.Demo).WHERE(table.Demo.ID.EQ(jet.Int64(1)))
 //
-//	// 查询方法
+//	// 执行方法
 //	pgsql.FindOne[model.Demo](ctx, db, stmt)
 func FindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, error) {
 	var (
@@ -223,7 +223,7 @@ func FindOne[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) (*T, e
 //	// or
 //	jet.SELECT(table.Demo.AllColumns).FROM(table.Demo).WHERE(table.Demo.Name.LIKE(jet.String("%hello%")))
 //
-//	// 查询方法
+//	// 执行方法
 //	pgsql.FindAll[*model.Demo](ctx, db, stmt)
 func FindAll[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) ([]T, error) {
 	var (
@@ -252,7 +252,7 @@ func FindAll[T any](ctx context.Context, db qrm.DB, stmt SelectStatement) ([]T, 
 //		"github.com/noble-gase/ne/sqlkit/pgsql"
 //	)
 //
-//	// 查询方法
+//	// 执行方法
 //	pgsql.Count(ctx, db, func(count jet.SelectStatement) jet.SelectStatement {
 //		return count.FROM(table.Demo.Table).WHERE(table.Demo.Name.LIKE(jet.String("%hello%")))
 //	})
@@ -287,7 +287,7 @@ func Count(ctx context.Context, db qrm.DB, fn func(count SelectStatement) Select
 //		"github.com/noble-gase/ne/sqlkit/pgsql"
 //	)
 //
-//	// 查询方法
+//	// 执行方法
 //	pgsql.Paginate[*model.Demo](ctx, db, func(query jet.SelectStatement) jet.SelectStatement {
 //		return query.FROM(table.Demo.Table).WHERE(table.Demo.Name.LIKE(jet.String("%hello%")))
 //	}, page, size, table.Demo.AllColumns, table.Demo.ID.DESC())

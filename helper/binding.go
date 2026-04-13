@@ -11,8 +11,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const MaxFormMemory = 32 << 20
-
 // BindJSON 解析JSON请求体并校验
 func BindJSON(r *http.Request, obj any) error {
 	if r.Body != nil && r.Body != http.NoBody {
@@ -25,42 +23,34 @@ func BindJSON(r *http.Request, obj any) error {
 }
 
 // BindProto 解析Proto请求体并校验
-func BindProto(r *http.Request, msg proto.Message) error {
-	// GET请求
-	if r.Method == http.MethodGet {
-		if err := protokit.ValuesToMessage(msg, r.URL.Query()); err != nil {
-			return err
-		}
+func BindProto(r *http.Request, msg proto.Message, protovalidate bool) error {
+	if err := ParseProto(r, msg); err != nil {
+		return err
+	}
+	if protovalidate {
 		return protokit.Validate(msg)
 	}
+	return validkit.ValidateStruct(msg)
+}
 
-	// 根据Content-Type解析请求体
-	switch ContentType(r.Header) {
-	case ContentForm:
-		if err := r.ParseForm(); err != nil {
-			return err
-		}
-		if err := protokit.ValuesToMessage(msg, r.PostForm); err != nil {
-			return err
-		}
-	case ContentMultipartForm:
-		if err := r.ParseMultipartForm(MaxFormMemory); err != nil {
-			if err != http.ErrNotMultipart {
-				return err
+// ParseProto 解析Proto请求体
+func ParseProto(r *http.Request, msg proto.Message) error {
+	if r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodPatch {
+		switch ContentType(r.Header) {
+		case ContentForm, ContentMultipartForm:
+			if r.PostForm == nil {
+				r.ParseMultipartForm(1 << 20)
 			}
-		}
-		if err := protokit.ValuesToMessage(msg, r.PostForm); err != nil {
-			return err
-		}
-	case ContentJSON:
-		if r.Body != nil && r.Body != http.NoBody {
+			return protokit.ValuesToMessage(msg, r.PostForm)
+		case ContentJSON:
+			if r.Body == nil || r.Body == http.NoBody {
+				return nil
+			}
 			defer io.Copy(io.Discard, r.Body)
-			if err := json.NewDecoder(r.Body).Decode(msg); err != nil {
-				return err
-			}
+			return json.NewDecoder(r.Body).Decode(msg)
+		default:
+			return errors.New("unsupported Content-Type")
 		}
-	default:
-		return errors.New("unsupported Content-Type")
 	}
-	return protokit.Validate(msg)
+	return protokit.ValuesToMessage(msg, r.URL.Query())
 }

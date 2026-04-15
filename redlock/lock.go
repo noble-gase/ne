@@ -79,22 +79,33 @@ func (l *RedLock) Release(ctx context.Context) error {
 func (l *RedLock) setnx(ctx context.Context) error {
 	token := uuid.New().String()
 
-	ok, err := l.uc.SetNX(ctx, l.key, token, l.ttl).Result()
-	if err != nil {
-		// 尝试GET一次：避免因网络错误导致误加锁
-		v, _err := l.uc.Get(ctx, l.key).Result()
-		if _err != nil {
-			if errors.Is(_err, redis.Nil) {
-				return err
-			}
-			return fmt.Errorf("SET-NX: %w; GET: %w", err, _err)
-		}
-		if v == token {
-			l.token = token
-		}
+	_, err := l.uc.SetArgs(ctx, l.key, token, redis.SetArgs{
+		Mode: "NX",
+		TTL:  l.ttl,
+	}).Result()
+
+	// 设置成功
+	if err == nil {
+		l.token = token
 		return nil
 	}
-	if ok {
+
+	// key已存在，未设置
+	if errors.Is(err, redis.Nil) {
+		return nil
+	}
+
+	// 异常错误，尝试GET一次：避免因网络错误导致误加锁
+	val, getErr := l.uc.Get(ctx, l.key).Result()
+	if getErr != nil {
+		if errors.Is(getErr, redis.Nil) {
+			return err
+		}
+		return fmt.Errorf("SET-NX: %w; GET: %w", err, getErr)
+	}
+	// NOTE: if SET timed out but actually succeeded, the remaining TTL
+	// will be less than l.ttl due to network round-trip delay.
+	if val == token {
 		l.token = token
 	}
 	return nil

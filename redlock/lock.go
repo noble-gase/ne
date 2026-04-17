@@ -24,7 +24,7 @@ end
 
 // RedLock 基于「Redis」实现的分布式锁
 //
-// 注意: 单个 RedLock 实例不是并发安全的，同一实例不应被多个 goroutine 共享
+// 注意：单个 RedLock 实例不是并发安全的，同一实例不应被多个 goroutine 共享
 type RedLock struct {
 	uc    redis.UniversalClient
 	key   string

@@ -23,6 +23,8 @@ end
 `)
 
 // RedLock 基于「Redis」实现的分布式锁
+//
+// 注意: 单个 RedLock 实例不是并发安全的，同一实例不应被多个 goroutine 共享
 type RedLock struct {
 	uc    redis.UniversalClient
 	key   string
@@ -73,10 +75,16 @@ func (l *RedLock) Release(ctx context.Context) error {
 	if len(l.token) == 0 {
 		return nil
 	}
+
+	defer func() {
+		l.token = "" // clear token
+	}()
 	return script.Run(context.WithoutCancel(ctx), l.uc, []string{l.key}, l.token).Err()
 }
 
 func (l *RedLock) setnx(ctx context.Context) error {
+	l.token = "" // clear token
+
 	token := uuid.New().String()
 
 	_, err := l.uc.SetArgs(ctx, l.key, token, redis.SetArgs{

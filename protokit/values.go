@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -19,8 +20,7 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
-// MessageToValues parses proto.Message into url.Values.
-// Only fields that are explicitly set (non-default) are included.
+// MessageToValues parses proto.Message into url.Values
 func MessageToValues(msg proto.Message) url.Values {
 	return parseMessage(msg.ProtoReflect())
 }
@@ -41,6 +41,7 @@ func parseMessage(msg protoreflect.Message) url.Values {
 
 		val := msg.Get(fd)
 
+		// list
 		if fd.IsList() {
 			for k, v := range listToValues(fd, val.List()) {
 				query[k] = append(query[k], v...)
@@ -48,6 +49,7 @@ func parseMessage(msg protoreflect.Message) url.Values {
 			continue
 		}
 
+		// map
 		if fd.IsMap() {
 			for k, v := range mapToValues(fd, val.Map()) {
 				newKey := key + "." + k
@@ -56,25 +58,28 @@ func parseMessage(msg protoreflect.Message) url.Values {
 			continue
 		}
 
+		// 其他类型
 		switch fd.Kind() {
 		case protoreflect.StringKind:
 			query.Add(key, val.String())
 		case protoreflect.BoolKind:
 			query.Add(key, strconv.FormatBool(val.Bool()))
-		case protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Sfixed32Kind,
-			protoreflect.Int64Kind, protoreflect.Sint64Kind, protoreflect.Sfixed64Kind:
+		case protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Sfixed32Kind, protoreflect.Int64Kind, protoreflect.Sint64Kind, protoreflect.Sfixed64Kind:
 			query.Add(key, strconv.FormatInt(val.Int(), 10))
-		case protoreflect.Uint32Kind, protoreflect.Fixed32Kind,
-			protoreflect.Uint64Kind, protoreflect.Fixed64Kind:
+		case protoreflect.Uint32Kind, protoreflect.Fixed32Kind, protoreflect.Uint64Kind, protoreflect.Fixed64Kind:
 			query.Add(key, strconv.FormatUint(val.Uint(), 10))
 		case protoreflect.FloatKind, protoreflect.DoubleKind:
 			query.Add(key, strconv.FormatFloat(val.Float(), 'f', -1, 64))
 		case protoreflect.BytesKind:
 			query.Add(key, base64.URLEncoding.EncodeToString(val.Bytes()))
 		case protoreflect.EnumKind:
-			e := fd.Enum().Values()
-			query.Add(key, string(e.ByNumber(val.Enum()).Name()))
+			query.Add(key, enumToString(fd.Enum(), val.Enum()))
 		case protoreflect.MessageKind, protoreflect.GroupKind:
+			// 先尝试 WKT 扁平化，保持与 getProtoMessage 对称
+			if s, ok := wktToString(val.Message()); ok {
+				query.Add(key, s)
+				break
+			}
 			for k, v := range parseMessage(val.Message()) {
 				newKey := key + "." + k
 				query[newKey] = append(query[newKey], v...)
@@ -100,13 +105,11 @@ func listToValues(fd protoreflect.FieldDescriptor, list protoreflect.List) url.V
 		for i := 0; i < list.Len(); i++ {
 			query.Add(key, strconv.FormatBool(list.Get(i).Bool()))
 		}
-	case protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Sfixed32Kind,
-		protoreflect.Int64Kind, protoreflect.Sint64Kind, protoreflect.Sfixed64Kind:
+	case protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Sfixed32Kind, protoreflect.Int64Kind, protoreflect.Sint64Kind, protoreflect.Sfixed64Kind:
 		for i := 0; i < list.Len(); i++ {
 			query.Add(key, strconv.FormatInt(list.Get(i).Int(), 10))
 		}
-	case protoreflect.Uint32Kind, protoreflect.Fixed32Kind,
-		protoreflect.Uint64Kind, protoreflect.Fixed64Kind:
+	case protoreflect.Uint32Kind, protoreflect.Fixed32Kind, protoreflect.Uint64Kind, protoreflect.Fixed64Kind:
 		for i := 0; i < list.Len(); i++ {
 			query.Add(key, strconv.FormatUint(list.Get(i).Uint(), 10))
 		}
@@ -120,12 +123,17 @@ func listToValues(fd protoreflect.FieldDescriptor, list protoreflect.List) url.V
 		}
 	case protoreflect.EnumKind:
 		for i := 0; i < list.Len(); i++ {
-			e := fd.Enum().Values()
-			query.Add(key, string(e.ByNumber(list.Get(i).Enum()).Name()))
+			query.Add(key, enumToString(fd.Enum(), list.Get(i).Enum()))
 		}
 	case protoreflect.MessageKind, protoreflect.GroupKind:
 		for i := 0; i < list.Len(); i++ {
-			for k, v := range parseMessage(list.Get(i).Message()) {
+			msg := list.Get(i).Message()
+			if s, ok := wktToString(msg); ok {
+				// 与标量 list 保持一致：repeated 形式为 key=v0&key=v1...
+				query.Add(key, s)
+				continue
+			}
+			for k, v := range parseMessage(msg) {
 				newKey := fmt.Sprintf("%s[%d].%s", key, i, k)
 				query[newKey] = append(query[newKey], v...)
 			}
@@ -147,14 +155,12 @@ func mapToValues(fd protoreflect.FieldDescriptor, m protoreflect.Map) url.Values
 			query.Add(getMapKey(fd.MapKey(), k.Value()), strconv.FormatBool(v.Bool()))
 			return true
 		})
-	case protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Sfixed32Kind,
-		protoreflect.Int64Kind, protoreflect.Sint64Kind, protoreflect.Sfixed64Kind:
+	case protoreflect.Int32Kind, protoreflect.Sint32Kind, protoreflect.Sfixed32Kind, protoreflect.Int64Kind, protoreflect.Sint64Kind, protoreflect.Sfixed64Kind:
 		m.Range(func(k protoreflect.MapKey, v protoreflect.Value) bool {
 			query.Add(getMapKey(fd.MapKey(), k.Value()), strconv.FormatInt(v.Int(), 10))
 			return true
 		})
-	case protoreflect.Uint32Kind, protoreflect.Fixed32Kind,
-		protoreflect.Uint64Kind, protoreflect.Fixed64Kind:
+	case protoreflect.Uint32Kind, protoreflect.Fixed32Kind, protoreflect.Uint64Kind, protoreflect.Fixed64Kind:
 		m.Range(func(k protoreflect.MapKey, v protoreflect.Value) bool {
 			query.Add(getMapKey(fd.MapKey(), k.Value()), strconv.FormatUint(v.Uint(), 10))
 			return true
@@ -171,13 +177,16 @@ func mapToValues(fd protoreflect.FieldDescriptor, m protoreflect.Map) url.Values
 		})
 	case protoreflect.EnumKind:
 		m.Range(func(k protoreflect.MapKey, v protoreflect.Value) bool {
-			e := fd.MapValue().Enum().Values()
-			query.Add(getMapKey(fd.MapKey(), k.Value()), string(e.ByNumber(v.Enum()).Name()))
+			query.Add(getMapKey(fd.MapKey(), k.Value()), enumToString(fd.MapValue().Enum(), v.Enum()))
 			return true
 		})
 	case protoreflect.MessageKind, protoreflect.GroupKind:
 		m.Range(func(k protoreflect.MapKey, v protoreflect.Value) bool {
 			mapKey := getMapKey(fd.MapKey(), k.Value())
+			if s, ok := wktToString(v.Message()); ok {
+				query.Add(mapKey, s)
+				return true
+			}
 			for subK, subV := range parseMessage(v.Message()) {
 				newKey := mapKey + "." + subK
 				query[newKey] = append(query[newKey], subV...)
@@ -188,7 +197,8 @@ func mapToValues(fd protoreflect.FieldDescriptor, m protoreflect.Map) url.Values
 	return query
 }
 
-// proto 规范中 map key 只能是整数或字符串，不会走到这里
+// getMapKey 格式化 proto map 的 key。
+// proto 规范规定 map key 只能是「整型/字符串/布尔型」
 func getMapKey(fd protoreflect.FieldDescriptor, key protoreflect.Value) string {
 	switch fd.Kind() {
 	case protoreflect.StringKind:
@@ -205,6 +215,53 @@ func getMapKey(fd protoreflect.FieldDescriptor, key protoreflect.Value) string {
 	return key.String()
 }
 
+func enumToString(ed protoreflect.EnumDescriptor, n protoreflect.EnumNumber) string {
+	if ev := ed.Values().ByNumber(n); ev != nil {
+		return string(ev.Name())
+	}
+	// 未知 enum number：输出数字，客户端可继续按数字解析
+	return strconv.FormatInt(int64(n), 10)
+}
+
+// wktToString 把 Well-Known Types 序列化为扁平字符串，
+// 对称于 getProtoMessage。返回 (s, true) 表示命中 WKT；
+// 否则返回 ("", false)，调用方按普通 message 处理。
+func wktToString(m protoreflect.Message) (string, bool) {
+	switch msg := m.Interface().(type) {
+	case *timestamppb.Timestamp:
+		return msg.AsTime().UTC().Format(time.RFC3339Nano), true
+	case *durationpb.Duration:
+		return msg.AsDuration().String(), true
+	case *wrapperspb.DoubleValue:
+		return strconv.FormatFloat(msg.Value, 'f', -1, 64), true
+	case *wrapperspb.FloatValue:
+		return strconv.FormatFloat(float64(msg.Value), 'f', -1, 32), true
+	case *wrapperspb.Int64Value:
+		return strconv.FormatInt(msg.Value, 10), true
+	case *wrapperspb.Int32Value:
+		return strconv.FormatInt(int64(msg.Value), 10), true
+	case *wrapperspb.UInt64Value:
+		return strconv.FormatUint(msg.Value, 10), true
+	case *wrapperspb.UInt32Value:
+		return strconv.FormatUint(uint64(msg.Value), 10), true
+	case *wrapperspb.BoolValue:
+		return strconv.FormatBool(msg.Value), true
+	case *wrapperspb.StringValue:
+		return msg.Value, true
+	case *wrapperspb.BytesValue:
+		return base64.URLEncoding.EncodeToString(msg.Value), true
+	case *fieldmaskpb.FieldMask:
+		return strings.Join(msg.Paths, ","), true
+	case *structpb.Value, *structpb.Struct:
+		b, err := protojson.Marshal(msg)
+		if err != nil {
+			return err.Error(), true
+		}
+		return string(b), true
+	}
+	return "", false
+}
+
 // ValuesToMessage parses url.Values into proto.Message
 func ValuesToMessage(msg proto.Message, values url.Values) error {
 	return parseValues(msg.ProtoReflect(), valuesToMap(values))
@@ -217,11 +274,14 @@ func parseValues(msg protoreflect.Message, data map[string]any) error {
 		if fd == nil {
 			continue
 		}
+		// 类型断言
 		switch ss := val.(type) {
 		case []string:
+			// 不考虑map类型
 			if len(ss) == 0 || fd.IsMap() {
 				continue
 			}
+			// list
 			if fd.IsList() {
 				list := msg.Mutable(fd).List()
 				for _, s := range ss {
@@ -235,6 +295,7 @@ func parseValues(msg protoreflect.Message, data map[string]any) error {
 				}
 				continue
 			}
+			// 其他类型
 			v, err := getProtoValue(fd, ss[0])
 			if err != nil {
 				return err
@@ -325,11 +386,23 @@ func getProtoValue(fd protoreflect.FieldDescriptor, s string) (protoreflect.Valu
 		}
 		value = protoreflect.ValueOfBytes(b)
 	case protoreflect.EnumKind:
-		enumDesc := fd.Enum()
-		enumVal := enumDesc.Values().ByName(protoreflect.Name(s))
-		if enumVal != nil {
-			value = protoreflect.ValueOfEnum(enumVal.Number())
+		enumVals := fd.Enum().Values()
+		// 先按名字解析
+		if ev := enumVals.ByName(protoreflect.Name(s)); ev != nil {
+			value = protoreflect.ValueOfEnum(ev.Number())
+			break
 		}
+		// 回退按数字解析（与 protojson 对齐）
+		n, err := strconv.ParseInt(s, 10, 32)
+		if err != nil {
+			return value, fmt.Errorf("invalid enum value %q for %s", s, fd.Enum().FullName())
+		}
+		if ev := enumVals.ByNumber(protoreflect.EnumNumber(n)); ev != nil {
+			value = protoreflect.ValueOfEnum(ev.Number())
+			break
+		}
+		// proto3 允许未知 enum number，按数字透传
+		value = protoreflect.ValueOfEnum(protoreflect.EnumNumber(n))
 	case protoreflect.MessageKind, protoreflect.GroupKind:
 		m, err := getProtoMessage(fd.Message(), s)
 		if err != nil {
@@ -450,143 +523,198 @@ func setValuesMap(msg protoreflect.Message, fd protoreflect.FieldDescriptor, dat
 		if err != nil {
 			return err
 		}
-		mapKey := keyVal.MapKey()
-		if !mapKey.IsValid() {
-			continue
-		}
-		switch v := subVal.(type) {
-		case []string:
-			if len(v) == 0 {
-				continue
+		if mapKey := keyVal.MapKey(); mapKey.IsValid() {
+			switch v := subVal.(type) {
+			case []string:
+				if len(v) == 0 {
+					continue
+				}
+				mapVal, err := getProtoValue(valFD, v[0])
+				if err != nil {
+					// 非 WKT 的 message 会命中 "unsupported message type"：
+					// 保持旧语义（silent skip），不冒泡整个 ValuesToMessage 失败
+					kind := valFD.Kind()
+					if kind == protoreflect.MessageKind || kind == protoreflect.GroupKind {
+						continue
+					}
+					return err // 标量类型的解析错误仍然冒泡
+				}
+				if mapVal.IsValid() {
+					m.Set(mapKey, mapVal)
+				}
+			case map[string]any:
+				// 仅支持message类型
+				if valFD.Kind() == protoreflect.MessageKind || valFD.Kind() == protoreflect.GroupKind {
+					subMsg := m.NewValue().Message()
+					if err := parseValues(subMsg, v); err != nil {
+						return err
+					}
+					m.Set(mapKey, protoreflect.ValueOfMessage(subMsg))
+				}
 			}
-			if valFD.Kind() == protoreflect.MessageKind || valFD.Kind() == protoreflect.GroupKind {
-				continue
-			}
-			mapVal, err := getProtoValue(valFD, v[0])
-			if err != nil {
-				return err
-			}
-			if mapVal.IsValid() {
-				m.Set(mapKey, mapVal)
-			}
-		case map[string]any:
-			if valFD.Kind() != protoreflect.MessageKind && valFD.Kind() != protoreflect.GroupKind {
-				continue
-			}
-			subMsg := m.NewValue().Message()
-			if err := parseValues(subMsg, v); err != nil {
-				return err
-			}
-			m.Set(mapKey, protoreflect.ValueOfMessage(subMsg))
 		}
 	}
 	return nil
 }
 
-// valuesToMap converts url.Values into a nested map for parseValues.
-// Supports dot-notation for nested fields and indexed brackets for repeated fields,
-// e.g. "address.city", "items[0].name".
+// valuesToMap 将 url.Values 转换为嵌套 map，供 parseValues 使用。
+// 支持点号嵌套（a.b.c）与下标（items[0].name）。
+// 下标仅作为"分组键"使用，不决定位置与容量：
+//
+//	friends[-1]=a&friends[0]=b&friends[10]=c -> []map{...} 长度为 3，按下标升序。
+//
+// 非法下标（如 [abc]）、类型冲突 silent skip 该 key，不 panic。
 func valuesToMap(values url.Values) map[string]any {
-	result := make(map[string]any)
-	for key, value := range values {
-		segments := splitKey(key)
-		if len(segments) < 2 {
-			result[key] = value
-			continue
-		}
-		if err := setNested(result, segments, value); err != nil {
-			// 类型冲突时跳过该 key，不 panic
-			continue
-		}
+	root := make(map[string]any)
+	for key, rawVal := range values {
+		parts := strings.Split(flattenKey(key), ".")
+		writeTree(root, parts, rawVal)
 	}
-	return result
+	return finalizeArrays(root).(map[string]any)
 }
 
-// segment represents one parsed path component.
-type segment struct {
-	key   string
-	index int  // >= 0 表示数组下标
-	isArr bool // 是否为数组访问
-}
+func writeTree(root map[string]any, parts []string, value []string) {
+	var cur any = root
+	for i, part := range parts {
+		isLast := i == len(parts)-1
 
-// splitKey parses a dotted/bracketed key into segments.
-// e.g. "items[0].name" -> [{key:"items",isArr:true,index:0}, {key:"name"}]
-func splitKey(key string) []segment {
-	var segments []segment
-	parts := strings.Split(key, ".")
-	for _, part := range parts {
-		if part == "" {
-			continue
-		}
-		lb := strings.Index(part, "[")
-		rb := strings.Index(part, "]")
-		if lb >= 0 && rb > lb {
-			arrKey := part[:lb]
-			idx, err := strconv.Atoi(part[lb+1 : rb])
-			if err != nil {
-				// 非数字下标，当普通 key 处理
-				segments = append(segments, segment{key: part})
-				continue
-			}
-			segments = append(segments, segment{key: arrKey, isArr: true, index: idx})
-			// 处理 ] 后面还有内容的情况，如 "[0]suffix"（罕见但防御）
-			if rb+1 < len(part) {
-				segments = append(segments, segment{key: part[rb+1:]})
-			}
-		} else {
-			segments = append(segments, segment{key: part})
-		}
-	}
-	return segments
-}
-
-// setNested writes value into nested map/slice structure described by segments.
-// Returns error on type conflict to allow caller to skip gracefully.
-func setNested(root map[string]any, segs []segment, value []string) error {
-	cur := root
-	for i, seg := range segs {
-		isLast := i == len(segs)-1
-
-		if seg.isArr {
-			// 当前层是数组
-			raw, exists := cur[seg.key]
-			if !exists {
-				cur[seg.key] = make([]map[string]any, 0)
-				raw = cur[seg.key]
-			}
-
-			arr, ok := raw.([]map[string]any)
+		lb := strings.IndexByte(part, '[')
+		if lb < 0 {
+			parent, ok := cur.(map[string]any)
 			if !ok {
-				return fmt.Errorf("type conflict at key %q: expected []map, got %T", seg.key, raw)
+				return
 			}
-			for len(arr) <= seg.index {
-				arr = append(arr, make(map[string]any))
-			}
-			cur[seg.key] = arr
-
 			if isLast {
-				// 数组最后一层直接存 value（极少见，防御性处理）
-				arr[seg.index][seg.key] = value
-			} else {
-				cur = arr[seg.index]
+				parent[part] = value
+				return
 			}
-		} else {
-			if isLast {
-				cur[seg.key] = value
-			} else {
-				raw, exists := cur[seg.key]
-				if !exists {
-					cur[seg.key] = make(map[string]any)
-					raw = cur[seg.key]
-				}
+			raw, exists := parent[part]
+			if !exists {
+				raw = make(map[string]any)
+				parent[part] = raw
+			}
+			next, ok := raw.(map[string]any)
+			if !ok {
+				return
+			}
+			cur = next
+			continue
+		}
 
-				next, ok := raw.(map[string]any)
-				if !ok {
-					return fmt.Errorf("type conflict at key %q: expected map, got %T", seg.key, raw)
-				}
-				cur = next
+		rb := strings.IndexByte(part, ']')
+		if rb <= lb {
+			return // 畸形 [ 无匹配 ]
+		}
+		idx, err := strconv.Atoi(part[lb+1 : rb])
+		if err != nil {
+			return // 非整数下标（如 [abc]），跳过
+		}
+		arrayKey := part[:lb]
+
+		parent, ok := cur.(map[string]any)
+		if !ok {
+			return
+		}
+		raw, exists := parent[arrayKey]
+		if !exists {
+			raw = make(map[int]any)
+			parent[arrayKey] = raw
+		}
+		arr, ok := raw.(map[int]any)
+		if !ok {
+			return
+		}
+		if isLast {
+			// 末段是 tags[i]=v 形式：允许标量 list
+			switch t := arr[idx].(type) {
+			case []string:
+				arr[idx] = append(t, value...)
+			case map[string]any:
+				// 已有嵌套消息，忽略扁平覆盖，避免用户输入冲突导致数据丢失
+				return
+			default:
+				arr[idx] = value
+			}
+			return
+		}
+		next, exists := arr[idx]
+		if !exists {
+			next = make(map[string]any)
+			arr[idx] = next
+		}
+		if _, ok := next.(map[string]any); !ok {
+			return
+		}
+		cur = next
+	}
+}
+
+// finalizeArrays 递归地把 map[int]any 节点按 key 升序展开为紧致切片：
+//   - 若桶内全是 []string，则合并为 []string（标量 list）；
+//   - 否则为 []map[string]any（message list）。
+//
+// 下标只决定顺序，不影响结果长度；稀疏下标会被压紧。
+func finalizeArrays(v any) any {
+	switch t := v.(type) {
+	case map[string]any:
+		for k, sub := range t {
+			t[k] = finalizeArrays(sub)
+		}
+		return t
+	case map[int]any:
+		keys := make([]int, 0, len(t))
+		for k := range t {
+			keys = append(keys, k)
+		}
+		sort.Ints(keys)
+
+		scalar := true
+		for _, k := range keys {
+			if _, ok := t[k].(map[string]any); ok {
+				scalar = false
+				break
 			}
 		}
+		if scalar {
+			ss := make([]string, 0, len(keys))
+			for _, k := range keys {
+				if s, ok := t[k].([]string); ok {
+					ss = append(ss, s...)
+				}
+			}
+			return ss
+		}
+		items := make([]map[string]any, 0, len(keys))
+		for _, k := range keys {
+			if m, ok := t[k].(map[string]any); ok {
+				items = append(items, finalizeArrays(m).(map[string]any))
+			}
+		}
+		return items
+	default:
+		return v
 	}
-	return nil
+}
+
+func flattenKey(key string) string {
+	items := strings.FieldsFunc(key, func(r rune) bool {
+		return r == '[' || r == ']'
+	})
+	if len(items) <= 1 {
+		return key
+	}
+
+	var builder strings.Builder
+	builder.WriteString(items[0])
+	for _, v := range items[1:] {
+		if _, err := strconv.ParseInt(v, 10, 64); err == nil {
+			builder.WriteString("[" + v + "]")
+		} else {
+			if !strings.HasPrefix(v, ".") {
+				builder.WriteString(".")
+			}
+			builder.WriteString(v)
+		}
+	}
+	return builder.String()
 }

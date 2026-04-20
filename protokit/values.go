@@ -2,6 +2,7 @@ package protokit
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net/url"
 	"sort"
@@ -19,6 +20,10 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
+
+// ErrUnsupportedMessage 当尝试把扁平字符串解析成非 WKT 的 message 类型时返回。
+// 调用方可以用 errors.Is 来区分"类型不支持"和"格式错误"。
+var ErrUnsupportedMessage = errors.New("unsupported message type")
 
 // MessageToValues parses proto.Message into url.Values
 func MessageToValues(msg proto.Message) url.Values {
@@ -252,7 +257,7 @@ func wktToString(m protoreflect.Message) (string, bool) {
 		return base64.URLEncoding.EncodeToString(msg.Value), true
 	case *fieldmaskpb.FieldMask:
 		return strings.Join(msg.Paths, ","), true
-	case *structpb.Value, *structpb.Struct:
+	case *structpb.Value, *structpb.Struct, *structpb.ListValue:
 		b, err := protojson.Marshal(msg)
 		if err != nil {
 			return err.Error(), true
@@ -507,8 +512,14 @@ func getProtoMessage(md protoreflect.MessageDescriptor, s string) (protoreflect.
 			return nil, err
 		}
 		msg = v
+	case "google.protobuf.ListValue":
+		v := new(structpb.ListValue)
+		if err := protojson.Unmarshal([]byte(s), v); err != nil {
+			return nil, err
+		}
+		msg = v
 	default:
-		return nil, fmt.Errorf("unsupported message type: %s", string(md.FullName()))
+		return nil, fmt.Errorf("%w: %s", ErrUnsupportedMessage, string(md.FullName()))
 	}
 	return msg.ProtoReflect(), nil
 }
@@ -531,13 +542,13 @@ func setValuesMap(msg protoreflect.Message, fd protoreflect.FieldDescriptor, dat
 				}
 				mapVal, err := getProtoValue(valFD, v[0])
 				if err != nil {
-					// 非 WKT 的 message 会命中 "unsupported message type"：
-					// 保持旧语义（silent skip），不冒泡整个 ValuesToMessage 失败
 					kind := valFD.Kind()
 					if kind == protoreflect.MessageKind || kind == protoreflect.GroupKind {
-						continue
+						if errors.Is(err, ErrUnsupportedMessage) {
+							continue
+						}
 					}
-					return err // 标量类型的解析错误仍然冒泡
+					return err
 				}
 				if mapVal.IsValid() {
 					m.Set(mapKey, mapVal)
@@ -708,7 +719,9 @@ func flattenKey(key string) string {
 	builder.WriteString(items[0])
 	for _, v := range items[1:] {
 		if _, err := strconv.ParseInt(v, 10, 64); err == nil {
-			builder.WriteString("[" + v + "]")
+			builder.WriteString("[")
+			builder.WriteString(v)
+			builder.WriteString("]")
 		} else {
 			if !strings.HasPrefix(v, ".") {
 				builder.WriteString(".")
